@@ -1,0 +1,682 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if customer %}{{ customer.name }}'s Orders{% else %}All Orders{% endif %} | Nextora</title>
+    <!-- Bootstrap CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f8f9fa;
+            padding-top: 20px;
+        }
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            border: none;
+        }
+        .card-header {
+            background-color: #fff;
+            border-bottom: 1px solid rgba(0,0,0,0.125);
+            font-weight: 500;
+        }
+        .stats-card {
+            text-align: center;
+            padding: 20px;
+            transition: transform 0.3s;
+        }
+        .stats-card:hover {
+            transform: translateY(-5px);
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: 500;
+            color: #2196F3;
+        }
+        
+        /* Enhanced revenue styling */
+        .total-revenue {
+            font-weight: 700;
+            color: #28a745;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #6c757d;
+        }
+        .table th {
+            font-weight: 500;
+            background-color: #f8f9fa;
+            color: #495057;
+        }
+        .sort-icon {
+            margin-left: 5px;
+            color: #adb5bd;
+        }
+        .sort-active {
+            color: #2196F3;
+        }
+        .search-input {
+            border-radius: 20px;
+            padding-left: 15px;
+        }
+        
+        /* Order status badges */
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .status-completed {
+            background-color: rgba(40, 167, 69, 0.1);
+            color: #28a745;
+            border: 1px solid rgba(40, 167, 69, 0.2);
+        }
+        
+        .status-processing {
+            background-color: rgba(255, 193, 7, 0.1);
+            color: #ffc107;
+            border: 1px solid rgba(255, 193, 7, 0.2);
+        }
+        
+        .status-cancelled {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+            border: 1px solid rgba(220, 53, 69, 0.2);
+        }
+        
+        .status-ontheway {
+            background-color: rgba(23, 162, 184, 0.1);
+            color: #17a2b8;
+            border: 1px solid rgba(23, 162, 184, 0.2);
+        }
+        
+        .status-recived {
+            background-color: rgba(108, 117, 125, 0.1);
+            color: #6c757d;
+            border: 1px solid rgba(108, 117, 125, 0.2);
+        }
+        
+        /* Product badge styles */
+        .badge-products {
+            background-color: #e3f2fd;
+            color: #0d6efd;
+            font-weight: normal;
+            padding: 6px 10px;
+            margin: 2px;
+            display: inline-block;
+        }
+        
+        .badge-count {
+            background-color: #0d6efd;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 10px;
+            margin-left: 5px;
+        }
+        
+        /* Order row styling */
+        .order-row {
+            cursor: pointer;
+        }
+        
+        .order-row:hover {
+            background-color: #f5f9ff;
+        }
+        
+        /* Order details section */
+        .order-details-row {
+            background-color: #f8f9fa;
+        }
+        
+        .order-details {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin: 0 20px 10px;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Customer info section */
+        .customer-info {
+            border-left: 3px solid #2196F3;
+            padding-left: 15px;
+            margin-bottom: 20px;
+        }
+        
+        /* Filter section */
+        .filter-section {
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .breadcrumb-item a {
+            text-decoration: none;
+            color: #6c757d;
+        }
+        
+        .breadcrumb-item.active {
+            color: #2196F3;
+        }
+        
+        .page-link {
+            color: #2196F3;
+        }
+        
+        .page-item.active .page-link {
+            background-color: #2196F3;
+            border-color: #2196F3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Breadcrumb Navigation -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/admin_view"><i class="fas fa-home"></i> Home</a></li>
+                {% if customer %}
+                <li class="breadcrumb-item"><a href="/customer_list/">Customers</a></li>
+                <li class="breadcrumb-item active">{{ customer.name }}'s Orders</li>
+                {% else %}
+                <li class="breadcrumb-item active">All Orders</li>
+                {% endif %}
+            </ol>
+        </nav>
+        
+        <h1 class="mb-4">
+            {% if customer %}
+            {{ customer.name }}'s Orders
+            {% else %}
+            All Orders
+            {% endif %}
+        </h1>
+        
+        <!-- Customer Info Section (if customer filter is applied) -->
+        {% if customer %}
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="customer-info">
+                            <h5 class="mb-3">Customer Information</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><i class="fas fa-envelope text-primary me-2"></i> {{ customer.email }}</p>
+                                    <p><i class="fas fa-phone text-primary me-2"></i> {{ customer.phone }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><i class="fas fa-shopping-cart text-primary me-2"></i> Total Orders: {{ customer.total_orders }}</p>
+                                    <p><i class="fas fa-check-circle text-primary me-2"></i> Completed Orders: {{ customer.completed_orders }}</p>
+                                    <p><i class="fas fa-rupee-sign text-primary me-2"></i> Total Spent: ₹{{ customer.total_spent|floatformat:2 }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <a href="/customer_list/" class="btn btn-outline-primary">
+                            <i class="fas fa-arrow-left me-1"></i> Back to All Customers
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Stats Dashboard -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card stats-card">
+                    <div class="stat-value">{{ metrics.total_orders }}</div>
+                    <div class="stat-label">Total Orders</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card stats-card">
+                    <div class="stat-value">{{ metrics.completed_orders }}</div>
+                    <div class="stat-label">Completed Orders</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card stats-card">
+                    <div class="stat-value total-revenue">₹{{ metrics.total_revenue|floatformat:2 }}</div>
+                    <div class="stat-label">Total Revenue</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="filter-section mb-4">
+            <form method="get" action="{% url 'orders_list' %}" class="row g-3">
+                <!-- Preserve the customer filter if it exists -->
+                {% if customer_id %}
+                <input type="hidden" name="customer" value="{{ customer_id }}">
+                {% endif %}
+                
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0">
+                            <i class="fas fa-search text-muted"></i>
+                        </span>
+                        <input type="text" name="q" value="{{ search_query }}" class="form-control search-input border-start-0" placeholder="Search orders...">
+                    </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <select name="status" class="form-select">
+                        <option value="">All Statuses</option>
+                        {% for status_option in status_options %}
+                        <option value="{{ status_option }}" {% if status == status_option %}selected{% endif %}>
+                            {{ status_option|title }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-md-3">
+                    <select name="sort" class="form-select">
+                        <option value="created_at" {% if sort_by == 'created_at' %}selected{% endif %}>Date (Newest First)</option>
+                        <option value="id" {% if sort_by == 'id' %}selected{% endif %}>Order ID</option>
+                        <option value="total" {% if sort_by == 'total' %}selected{% endif %}>Total Amount</option>
+                    </select>
+                </div>
+                
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-filter me-1"></i> Filter
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Main Card -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Order List</h5>
+                <div>
+                    <span class="text-muted">{{ orders.paginator.count }} orders found</span>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Date</th>
+                                {% if not customer %}
+                                <th>Customer</th>
+                                {% endif %}
+                                <th>Status</th>
+                                <th>Products</th>
+                                <th>Total</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if orders %}
+                                {% for order in orders %}
+                                <tr class="order-row" data-order-id="{{ order.id }}">
+                                    <td># {{ order.id }}</td>
+                                    <td>{{ order.created_at|date:"M d, Y" }}</td>
+                                    {% if not customer %}
+                                    <td>
+                                        {% if order.customer %}
+                                        <a href="?customer={{ order.customer.id }}" class="text-decoration-none">
+                                            {{ order.customer.first_name }} {{ order.customer.last_name }}
+                                        </a>
+                                        {% else %}
+                                        <span class="text-muted">Guest</span>
+                                        {% endif %}
+                                    </td>
+                                    {% endif %}
+                                    <td>
+                                        {% if order.order_status == 'order completed' %}
+                                        <span class="status-badge status-completed">
+                                            <i class="fas fa-check-circle me-1"></i> Completed
+                                        </span>
+                                        {% elif order.order_status == 'order processing' %}
+                                        <span class="status-badge status-processing">
+                                            <i class="fas fa-cog me-1"></i> Processing
+                                        </span>
+                                        {% elif order.order_status == 'order cancelled' %}
+                                        <span class="status-badge status-cancelled">
+                                            <i class="fas fa-times-circle me-1"></i> Cancelled
+                                        </span>
+                                        {% elif order.order_status == 'order on the way' %}
+                                        <span class="status-badge status-ontheway">
+                                            <i class="fas fa-truck me-1"></i> On the way
+                                        </span>
+                                        {% else %}
+                                        <span class="status-badge status-recived">
+                                            <i class="fas fa-inbox me-1"></i> Received
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <span class="me-2">{{ order.product_count }}</span>
+                                            {% if order.products %}
+                                                {% for product in order.products|slice:":2" %}
+                                                <span class="badge badge-products">
+                                                    {{ product.name|truncatechars:10 }}
+                                                    <span class="badge-count">{{ product.quantity }}</span>
+                                                </span>
+                                                {% endfor %}
+                                                {% if order.products|length > 2 %}
+                                                <span class="badge bg-secondary">+{{ order.products|length|add:"-2" }}</span>
+                                                {% endif %}
+                                            {% else %}
+                                            <span class="text-muted">No products</span>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>₹{{ order.total|floatformat:2 }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary view-order-btn"
+                                            data-order-id="{{ order.id }}">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="{% if customer %}6{% else %}7{% endif %}" class="text-center py-4">
+                                        <i class="fas fa-shopping-cart text-muted mb-2" style="font-size: 24px;"></i>
+                                        <p class="mb-0">No orders found</p>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-muted">Showing {{ orders.start_index }} to {{ orders.end_index }} of {{ orders.paginator.count }} entries</span>
+                    </div>
+                    <nav>
+                        <ul class="pagination mb-0">
+                            {% if orders.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?{% if customer_id %}customer={{ customer_id }}&{% endif %}{% if search_query %}q={{ search_query }}&{% endif %}{% if status %}status={{ status }}&{% endif %}{% if sort_by %}sort={{ sort_by }}&{% endif %}page={{ orders.previous_page_number }}">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                            </li>
+                            {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link"><i class="fas fa-chevron-left"></i></span>
+                            </li>
+                            {% endif %}
+                            
+                            {% for i in orders.paginator.page_range %}
+                                {% if orders.number == i %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ i }}</span>
+                                </li>
+                                {% elif i > orders.number|add:"-3" and i < orders.number|add:"3" %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?{% if customer_id %}customer={{ customer_id }}&{% endif %}{% if search_query %}q={{ search_query }}&{% endif %}{% if status %}status={{ status }}&{% endif %}{% if sort_by %}sort={{ sort_by }}&{% endif %}page={{ i }}">{{ i }}</a>
+                                </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if orders.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?{% if customer_id %}customer={{ customer_id }}&{% endif %}{% if search_query %}q={{ search_query }}&{% endif %}{% if status %}status={{ status }}&{% endif %}{% if sort_by %}sort={{ sort_by }}&{% endif %}page={{ orders.next_page_number }}">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </li>
+                            {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link"><i class="fas fa-chevron-right"></i></span>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Details Modal -->
+    <div class="modal fade" id="orderDetailsModal" tabindex="-1" aria-labelledby="orderDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="orderDetailsModalLabel">Order Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="orderDetailsContent">
+                    <div class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2">Loading order details...</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Initialize the order details modal
+        const orderDetailsModal = new bootstrap.Modal(document.getElementById('orderDetailsModal'));
+        
+        // Add event listeners to view order buttons
+        document.querySelectorAll('.view-order-btn').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const orderId = this.dataset.orderId;
+                showOrderDetails(orderId);
+            });
+        });
+        
+        // Also make the entire row clickable
+        document.querySelectorAll('.order-row').forEach(row => {
+            row.addEventListener('click', function() {
+                const orderId = this.dataset.orderId;
+                showOrderDetails(orderId);
+            });
+        });
+        
+        // Function to show order details in modal
+        function showOrderDetails(orderId) {
+    // Show the modal
+    orderDetailsModal.show();
+    
+    // Load the order details
+    const contentContainer = document.getElementById('orderDetailsContent');
+    contentContainer.innerHTML = `
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Loading order details...</p>
+        </div>
+    `;
+    
+    console.log(`Fetching order details for order ID: ${orderId}`);
+    
+    // Make an AJAX request to get the order details
+    fetch(`/get_order_details/?order_id=${orderId}`)
+        .then(response => {
+            console.log('Response status:', response.status);
+            if (!response.ok) {
+                return response.json().then(data => {
+                    throw new Error(data.error || `Server returned ${response.status}`);
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Order data received:', data);
+            if (data.order) {
+                        const order = data.order;
+                        const orderDate = new Date(order.created_at);
+                        const formattedDate = orderDate.toLocaleDateString('en-IN', { 
+                            year: 'numeric', 
+                            month: 'long', 
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                        
+                        // Determine status badge class
+                        let statusClass = 'secondary';
+                        if (order.order_status === 'order completed') {
+                            statusClass = 'success';
+                        } else if (order.order_status === 'order cancelled') {
+                            statusClass = 'danger';
+                        } else if (order.order_status === 'order processing') {
+                            statusClass = 'warning';
+                        } else if (order.order_status === 'order on the way') {
+                            statusClass = 'info';
+                        }
+                        
+                        // Format status text
+                        const statusText = order.order_status.replace('order ', '').charAt(0).toUpperCase() + 
+                                          order.order_status.replace('order ', '').slice(1);
+                        
+                        // Generate products HTML
+                        let productsHTML = '';
+                        if (order.products && order.products.length > 0) {
+                            productsHTML = `
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Product</th>
+                                            <th class="text-center">Quantity</th>
+                                            <th class="text-end">Price</th>
+                                            <th class="text-end">Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                            `;
+                            
+                            order.products.forEach(product => {
+                                const productTotal = product.price * product.quantity;
+                                productsHTML += `
+                                    <tr>
+                                        <td>${product.name}</td>
+                                        <td class="text-center">${product.quantity}</td>
+                                        <td class="text-end">₹${product.price.toFixed(2)}</td>
+                                        <td class="text-end">₹${productTotal.toFixed(2)}</td>
+                                    </tr>
+                                `;
+                            });
+                            
+                            productsHTML += `
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th colspan="3" class="text-end">Subtotal:</th>
+                                            <th class="text-end">₹${order.total.toFixed(2)}</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            `;
+                        } else {
+                            productsHTML = `<p class="text-muted">No products found for this order.</p>`;
+                        }
+                        
+                        // Customer info HTML
+                        let customerHTML = '';
+                        if (order.customer) {
+                            customerHTML = `
+                                <div class="mb-3">
+                                    <h6>Customer Information</h6>
+                                    <p class="mb-1"><strong>Name:</strong> ${order.customer.name}</p>
+                                    <p class="mb-1"><strong>Email:</strong> ${order.customer.email}</p>
+                                    <p class="mb-1"><strong>Phone:</strong> ${order.customer.phone}</p>
+                                </div>
+                            `;
+                        } else {
+                            customerHTML = `<p class="text-muted mb-3">Guest checkout - No customer information available.</p>`;
+                        }
+                        
+                        // Shipping info
+                        const shippingHTML = `
+                            <div class="mb-3">
+                                <h6>Shipping Address</h6>
+                                <p>${order.address}</p>
+                                <p class="mb-1"><strong>Contact:</strong> ${order.mobile}</p>
+                            </div>
+                        `;
+                        
+                        // Build the complete HTML
+                        contentContainer.innerHTML = `
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <h4>Order #${order.id}</h4>
+                                    <p><i class="far fa-calendar-alt me-1"></i> ${formattedDate}</p>
+                                </div>
+                                <div class="col-md-6 text-md-end">
+                                    <span class="badge bg-${statusClass} p-2">
+                                        ${statusText}
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    ${customerHTML}
+                                </div>
+                                <div class="col-md-6">
+                                    ${shippingHTML}
+                                </div>
+                            </div>
+                            
+                            <hr class="my-3">
+                            
+                            <h5 class="mb-3">Order Items</h5>
+                            ${productsHTML}
+                        `;
+                    } else {
+                contentContainer.innerHTML = `
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-1"></i>
+                        No order data returned from server.
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching order details:', error);
+            contentContainer.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-1"></i>
+                    Error: ${error.message || 'Failed to load order details'}
+                </div>
+            `;
+        });
+        }
+    </script>
+</body>
+</html>

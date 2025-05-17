@@ -1,0 +1,122 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Lens Product</title>
+    <!-- Include Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Custom CSS for colors and hover effects -->
+    <style>
+        body {
+            background-color: #f4f4f4;
+        }
+
+        .card {
+            background-color: #fff;
+            border: 1px solid #ccc;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .card:hover {
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-primary {
+            background-color: #040404;
+            border-color: #000000;
+        }
+
+        .btn-primary:hover {
+            background-color: #000000;
+            border-color: #000000;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="#">LensLook - Admin Page</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="admin_view">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="admin_add">Add Lens</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header" style="background-color: #000000; color: #fff;">
+                        <h2 class="text-center">Update Lens Product</h2>
+
+                    </div>
+                    <div class="card-body">
+                        {% if messages %}
+                            <div class="alert alert-danger" role="alert">
+                                {% for message in messages %}
+                                    {{ message }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        
+                        <form action="" method="POST" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label for="pname">Lens Name:</label>
+                                <input type="text" class="form-control" id="pname" name="pname" value="{{ lens.p_name }}" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="pdescription">Description:</label>
+                                <textarea class="form-control" id="pdescription" name="pdesc" rows="4" required>{{ lens.p_desc }}</textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="pcategory">Category:</label>
+                                <select class="form-control" id="pcategory" name="pcategory" required>
+                                    {% for i in cat %}
+                                    <option value="{{i.id}}" {% if i.id == lens.category.id %} selected {% endif %}>{{i.name}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="pquantity">Stock:</label>
+                                <input type="number" class="form-control" id="pquantity" name="pquantity" value="{{ lens.p_quantity }}" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label for="pprice">Price:</label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">₹</span>
+                                    </div>
+                                    <input type="number" class="form-control" id="pprice" name="pprice" value="{{ lens.p_price }}" required min="0">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="pimage">Image:</label>
+                                <input type="file" class="form-control-file" id="pimage" name="pimage" accept="image/*">
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block">Update</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include Bootstrap JS and jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

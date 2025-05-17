@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Dashboard | Nextora</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #34495e;
+            --accent-color: #3498db;
+            --sidebar-width: 250px;
+            --sidebar-collapsed-width: 70px;
+        }
+
+        body {
+            background-color: #f8f9fa;
+        }
+
+        /* Sidebar Styles */
+        #sidebar {
+            min-height: 100vh;
+            width: var(--sidebar-width);
+            background: var(--primary-color);
+            color: white;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 100;
+            transition: all 0.3s;
+        }
+
+        #sidebar.collapsed {
+            width: var(--sidebar-collapsed-width);
+        }
+
+        #sidebar .sidebar-header {
+            padding: 20px;
+            background: var(--secondary-color);
+        }
+
+        #sidebar ul.components {
+            padding: 20px 0;
+            border-bottom: 1px solid #47748b;
+        }
+
+        #sidebar ul li a {
+            padding: 15px 20px;
+            font-size: 1.1em;
+            display: block;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        #sidebar.collapsed ul li a span {
+            display: none;
+        }
+
+        #sidebar ul li a:hover {
+            background: var(--accent-color);
+        }
+
+        #sidebar ul li.active > a {
+            background: var(--accent-color);
+        }
+
+        #sidebar .sidebar-header h3 {
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        #sidebar.collapsed .sidebar-header h3 {
+            display: none;
+        }
+
+        #content {
+            margin-left: var(--sidebar-width);
+            transition: all 0.3s;
+            width: calc(100% - var(--sidebar-width));
+        }
+
+        #content.expanded {
+            margin-left: var(--sidebar-collapsed-width);
+            width: calc(100% - var(--sidebar-collapsed-width));
+        }
+
+        /* Existing styles... */
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #34495e;
+            --accent-color: #3498db;
+        }
+
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .dashboard-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card {
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .stat-label {
+            color: var(--secondary-color);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+
+        .recent-order-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .recent-order-item:last-child {
+            border-bottom: none;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 20px;
+        }
+
+        .btn-primary {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+
+        .btn-primary:hover {
+            background-color: #2980b9;
+            border-color: #2980b9;
+        }
+
+        .product-image {
+            max-width: 100px;
+            height: auto;
+            border-radius: 5px;
+        }
+
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+        }
+
+        .status-pending {
+            background-color: #ffeeba;
+            color: #856404;
+        }
+
+        .status-completed {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .navbar {
+            background-color: var(--primary-color) !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <nav id="sidebar">
+        <div class="sidebar-header">
+            <h3><i class="fas fa-laptop me-2"></i> Nextora</h3>
+        </div>
+
+        <ul class="list-unstyled components">
+            <li class="active">
+                <a href="{% url 'admin_view' %}">
+                    <i class="fas fa-home"></i>
+                    <span class="ml-2">Dashboard</span>
+                </a>
+            </li>
+            <li>
+                <a href="#productSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+                    <i class="fas fa-boxes"></i>
+                    <span class="ml-2">Products</span>
+                </a>
+                <ul class="collapse list-unstyled" id="productSubmenu">
+                    <li>
+                        <a href="{% url 'admin_add' %}">
+                            <i class="fas fa-plus"></i>
+                            <span class="ml-2">Add Product</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'product_list' %}" id="lowStockLink">
+                            <i class="fas fa-warehouse"></i>
+                            <span class="ml-2">Stock</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'admin_product_reviews' %}" id="lowStockLink">
+                            <i class="fas fa-star"></i>
+                            <span class="ml-2">Product Review</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <a href="#orderSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="ml-2">Orders</span>
+                </a>
+                <ul class="collapse list-unstyled" id="orderSubmenu">
+                    <li>
+                        <a href="{% url 'display_orders' %}">
+                            <i class="fas fa-tasks"></i>
+                            <span class="ml-2">Manage Orders</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'purchase-orders' %}">
+                            <i class="fas fa-tasks"></i>
+                            <span class="ml-2">Purchase Orders</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <a href="#categorySubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+                    <i class="fas fa-tags"></i>
+                    <span class="ml-2">Categories</span>
+                </a>
+                <ul class="collapse list-unstyled" id="categorySubmenu">
+                    <li>
+                        <a href="{% url 'add_category' %}">
+                            <i class="fas fa-plus"></i>
+                            <span class="ml-2">Add Category</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <a href="#specialistSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+                    <i class="fas fa-user-md"></i>
+                    <span class="ml-2">Specialists</span>
+                </a>
+                <ul class="collapse list-unstyled" id="specialistSubmenu">
+                    <li>
+                        <a href="{% url 'register_specialist' %}">
+                            <i class="fas fa-user-plus"></i>
+                            <span class="ml-2">Add Specialist</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'specialist_appointments' %}">
+                            <i class="fas fa-book"></i>
+                            <span class="ml-2">Appointments</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'seller_register' %}">
+                            <i class="fas fa-user-plus"></i>
+                            <span class="ml-2">Add Seller</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <a href="{% url 'customer_list' %}">
+                    <i class="fas fa-users"></i>
+                    <span class="ml-2">Customers</span>
+                </a>
+            </li>
+           
+            <li>
+                <a href="{% url 'sales_analysis' %}">
+                    <i class="fas fa-chart-area"></i>
+                    <span class="ml-2">Sales Analysis</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'query_tool' %}">
+                    <i class="fas fa-database"></i>
+                    <span class="ml-2">Query Tool</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'logout' %}">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span class="ml-2">Logout</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="text-center py-4">
+            <button id="sidebarCollapse" class="btn btn-outline-light btn-sm">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Page Content -->
+    <div id="content">
+        <div class="container-fluid mt-4">
+            <!-- Stats Overview -->
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="dashboard-card stat-card">
+                        <div class="stat-number">{{ total_orders }}</div>
+                        <div class="stat-label">Total Orders</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="dashboard-card stat-card">
+                        <div class="stat-number">₹{{ total_revenue }}</div>
+                        <div class="stat-label">Total Revenue</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="dashboard-card stat-card">
+                        <div class="stat-number">{{ total_products }}</div>
+                        <div class="stat-label">Products</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="dashboard-card stat-card">
+                        <div class="stat-number"><a  href="{% url 'customer_list' %}">{{ total_customers }}</div>
+                        <div class="stat-label">Customers</div></a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="dashboard-card">
+                        <h5><i class="fas fa-chart-line"></i> Sales Trend</h5>
+                        <div class="chart-container">
+                            <canvas id="salesChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="dashboard-card">
+                        <h5><i class="fas fa-chart-pie"></i> Top Selling Categories</h5>
+                        <div class="chart-container">
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Orders and Product List -->
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <div class="dashboard-card">
+                        <a href="{% url 'display_orders' %}">
+                            <i class="fas fa-tasks"></i>
+                            <span class="ml-2">Go to Orders</span>
+                        </a>
+                        <h5><i class="fas fa-clock"></i> Recent Orders</h5>
+                        <div class="recent-orders-list">
+                            {% for order in recent_orders %}
+                            <div class="recent-order-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>Order #{{ order.order_id }}</strong>
+                                        <div class="text-muted">{{ order.customer_name }}</div>
+                                        <div>₹{{ order.total_amount }}</div>
+                                    </div>
+                                    <span class="status-badge {% if order.status == 'Completed' %}status-completed{% else %}status-pending{% endif %}">
+                                        {{ order.status }}
+                                    </span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <div class="dashboard-card">
+                        <h5><i class="fas fa-glasses"></i> Product Inventory</h5>
+                        {% for i in messages %}
+                        <div class="alert alert-success" role="alert">
+                            {{i}}
+                        </div>
+                        {% endfor %}
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Category</th>
+                                        <th>Price</th>
+                                        <th>Stock</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for i in P %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <img src="{{ i.p_image.url }}" class="product-image mr-2">
+                                                <div>
+                                                    <div class="font-weight-bold">{{i.p_name}}</div>
+                                                    <small class="text-muted">{{i.p_desc|truncatechars:50}}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>{{i.cat}}</td>
+                                        <td>₹{{i.p_price}}</td>
+                                        <td>
+                                            {% if i.p_quantity < 10 %}
+                                                <span class="text-danger">{{i.p_quantity}}</span>
+                                            {% else %}
+                                                {{i.p_quantity}}
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if i.p_quantity == 0 %}
+                                                <span class="badge badge-danger">Out of Stock</span>
+                                            {% elif i.p_quantity < 10 %}
+                                                <span class="badge badge-warning">Low Stock</span>
+                                            {% else %}
+                                                <span class="badge badge-success">In Stock</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'admin_update' i.pk %}" class="btn btn-primary btn-sm">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="{% url 'admin_delete' i.pk %}" class="btn btn-danger btn-sm">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            $('#sidebarCollapse').on('click', function () {
+                $('#sidebar').toggleClass('collapsed');
+                $('#content').toggleClass('expanded');
+            });
+
+            // Highlight active menu item
+            const currentUrl = window.location.pathname;
+            $('ul.components a').each(function() {
+                if ($(this).attr('href') === currentUrl) {
+                    $(this).parent().addClass('active');
+                    // If it's in a submenu, expand the parent
+                    const submenu = $(this).closest('.collapse');
+                    if (submenu.length) {
+                        submenu.addClass('show');
+                        submenu.prev('a').removeClass('collapsed');
+                    }
+                }
+            });
+        });
+    </script>
+
+    <script>
+        // Sales Chart
+        const salesCtx = document.getElementById('salesChart').getContext('2d');
+        new Chart(salesCtx, {
+            type: 'line',
+            data: {
+                labels: {{ sales_dates|safe }},
+                datasets: [{
+                    label: 'Sales',
+                    data: {{ sales_data|safe }},
+                    borderColor: '#3498db',
+                    tension: 0.4,
+                    fill: true,
+                    backgroundColor: 'rgba(52, 152, 219, 0.1)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Category Chart
+        const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+        new Chart(categoryCtx, {
+            type: 'pie',
+            data: {
+                labels: {{ category_labels|safe }},
+                datasets: [{
+                    data: {{ category_data|safe }},
+                    backgroundColor: [
+                        '#3498db',
+                        '#2ecc71',
+                        '#e74c3c',
+                        '#f1c40f',
+                        '#9b59b6'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            boxWidth: 12,
+                            font: {
+                                size: 11
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                let value = context.raw || 0;
+                                return `${label}: ${value} items sold`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

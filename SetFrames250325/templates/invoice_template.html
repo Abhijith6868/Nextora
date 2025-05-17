@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice #{{ order.id }} - Nextora</title>
+    <style>
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            margin: 0;
+            padding: 40px;
+            background: #f8f9fa;
+            color: #2d3748;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .invoice-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #2b6cb0;
+        }
+
+        .company-details h1 {
+            margin: 0 0 10px;
+            color: #2b6cb0;
+            font-size: 28px;
+        }
+
+        .company-info {
+            color: #4a5568;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .invoice-info h2 {
+            margin: 0 0 10px;
+            color: #2b6cb0;
+            font-size: 24px;
+        }
+
+        .billing-details, .shipping-details {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 6px;
+        }
+
+        .billing-details h3, .shipping-details h3 {
+            margin: 0 0 15px;
+            color: #2b6cb0;
+            font-size: 18px;
+        }
+
+        .product-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+        }
+
+        .product-table th {
+            background: #2b6cb0;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .product-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .product-table tbody tr:nth-child(even) {
+            background: #f7fafc;
+        }
+
+        .totals .grand-total {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2b6cb0;
+            border-top: 2px solid #2b6cb0;
+        }
+
+        .footer {
+            margin-top: 60px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+            text-align: center;
+            color: #4a5568;
+            font-size: 14px;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .container {
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="invoice-header">
+            <div class="company-details">
+                <h1>Nextora</h1>
+                <div class="company-info">
+                    <p>123 Fashion Street<br>
+                    Mumbai, Maharashtra 400001<br>
+                    India<br>
+                    Phone: +91 1234567890<br>
+                    Email: info@Nextora.com</p>
+                </div>
+            </div>
+            <div class="invoice-info">
+                <h2>INVOICE</h2>
+                <p>
+                    <strong>Invoice #:</strong> {{ order.id }}<br>
+                    <strong>Date:</strong> {{ order.created_at|date:"F d, Y" }}<br>
+                    <strong>Status:</strong> {{ order.order_status|title }}
+                </p>
+            </div>
+        </div>
+
+        <div class="invoice-grid">
+            <div class="billing-details">
+                <h3>Billing Details</h3>
+                <p>
+                    {{ order.address }}<br>
+                    Phone: {{ order.mobile }}
+                </p>
+            </div>
+            <div class="shipping-details">
+                <h3>Shipping Details</h3>
+                <p>
+                    {{ order.address }}<br>
+                    Phone: {{ order.mobile }}
+                </p>
+            </div>
+        </div>
+
+        <table class="product-table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Quantity</th>
+                    <th>Rate</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cart_product in order.cart.cartproduct_set.all %}
+                <tr>
+                    <td>{{ cart_product.product.p_name }}</td>
+                    <td>{{ cart_product.quantity }}</td>
+                    <td>₹{{ cart_product.rate }}</td>
+                    <td>₹{{ cart_product.subtotal }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="totals">
+            <table>
+                <tr>
+                    <td>Subtotal:</td>
+                    <td align="right">₹{{ order.total }}</td>
+                </tr>
+                <tr>
+                    <td>Tax (0%):</td>
+                    <td align="right">₹0.00</td>
+                </tr>
+                <tr class="grand-total">
+                    <td>Total:</td>
+                    <td align="right">₹{{ order.total }}</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="footer">
+            <p>Thank you for your business!</p>
+            <p>If you have any questions about this invoice, please contact<br>
+            customer support at support@Nextora.com</p>
+        </div>
+    </div>
+</body>
+</html>

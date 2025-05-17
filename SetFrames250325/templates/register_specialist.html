@@ -1,0 +1,215 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eye Specialist Registration - Nextora</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .registration-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+        }
+
+        .registration-image {
+            flex: 1;
+            background: url('../static/doctor.jpg') center/cover;
+            min-height: 600px;
+            display: none;
+        }
+
+        .registration-form {
+            flex: 1;
+            padding: 40px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .form-header h2 {
+            color: #2d3748;
+            font-weight: 600;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .form-header p {
+            color: #718096;
+            font-size: 14px;
+        }
+
+        .form-floating {
+            margin-bottom: 20px;
+        }
+
+        .form-floating > label {
+            color: #4a5568;
+        }
+
+        .form-control {
+            border: 1px solid #e2e8f0;
+            padding: 12px 16px;
+            height: auto;
+            font-size: 14px;
+        }
+
+        .form-control:focus {
+            border-color: #4299e1;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+        }
+
+        .btn-primary {
+            background-color: #4299e1;
+            border: none;
+            padding: 12px 24px;
+            font-weight: 500;
+            width: 100%;
+            margin-bottom: 16px;
+        }
+
+        .btn-primary:hover {
+            background-color: #3182ce;
+        }
+
+        .btn-danger {
+            background-color: #f56565;
+            border: none;
+        }
+
+        .btn-danger:hover {
+            background-color: #e53e3e;
+        }
+
+        @media (min-width: 768px) {
+            .registration-image {
+                display: block;
+            }
+        }
+
+        .alert {
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="registration-container">
+        <div class="registration-image"></div>
+        <div class="registration-form">
+            <div class="form-header">
+                <h2><i class="fas fa-user-md me-2"></i>Eye Specialist Registration</h2>
+                <p>Join our network of professional eye care specialists</p>
+            </div>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="POST" onsubmit="return validateForm()">
+                {% csrf_token %}
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" id="first_name" name="first_name" placeholder="First Name" required>
+                            <label for="first_name">First Name</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" id="last_name" name="last_name" placeholder="Last Name" required>
+                            <label for="last_name">Last Name</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-floating mb-3">
+                    <input type="email" class="form-control" id="email" name="email" placeholder="Email" required>
+                    <label for="email">Email address</label>
+                </div>
+
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control" id="clinic_name" name="clinic_name" placeholder="Clinic Name" required>
+                    <label for="clinic_name">Clinic Name</label>
+                </div>
+
+                <div class="form-floating mb-3">
+                    <textarea class="form-control" id="address" name="address" placeholder="Address" style="height: 100px" required></textarea>
+                    <label for="address">Clinic Address</label>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" id="city" name="city" placeholder="City" required>
+                            <label for="city">City</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" id="state" name="state" placeholder="State" required>
+                            <label for="state">State</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-floating mb-3">
+                    <input type="tel" class="form-control" id="phone" name="phone" pattern="[0-9]{10}" placeholder="Phone" required>
+                    <label for="phone">Phone Number</label>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-user-plus me-2"></i>Register as Specialist
+                </button>
+                <a href="/" class="btn btn-danger w-100">
+                    <i class="fas fa-times me-2"></i>Cancel
+                </a>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function validateForm() {
+            const phone = document.getElementById('phone').value;
+            const phoneRegex = /^[0-9]{10}$/;
+            
+            if (!phoneRegex.test(phone)) {
+                alert('Please enter a valid 10-digit phone number');
+                return false;
+            }
+            
+            return true;
+        }
+    </script>
+</body>
+</html>

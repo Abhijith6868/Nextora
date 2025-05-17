@@ -1,0 +1,314 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - Nextora</title>
+    <!-- Bootstrap CSS -->
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .checkout-container {
+            padding: 2rem 0;
+        }
+        .checkout-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.05);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        .form-section {
+            margin-bottom: 2rem;
+        }
+        .form-section-title {
+            color: #2c3e50;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .order-summary {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1.5rem;
+        }
+        .product-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid #eee;
+        }
+        .product-item:last-child {
+            border-bottom: none;
+        }
+        .product-image {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        .product-details {
+            flex-grow: 1;
+            padding: 0 1rem;
+        }
+        .product-name {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+        .product-price {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        .total-amount {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .back-link {
+            color: #6c757d;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .back-link:hover {
+            color: #343a40;
+        }
+        .form-control:focus {
+            box-shadow: none;
+            border-color: #80bdff;
+        }
+        .btn-place-order {
+            padding: 0.8rem 2rem;
+            font-size: 1.1rem;
+            background-color: #2c3e50;
+            border: none;
+        }
+        .btn-place-order:hover {
+            background-color: #34495e;
+        }
+        .card-input-icon {
+            position: absolute;
+            right: 10px;
+            top: 38px;
+            color: #6c757d;
+        }
+        .payment-cards {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .payment-cards i {
+            font-size: 24px;
+            color: #6c757d;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-laptop me-2"></i>Nextora
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarMain">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/"><i class="fas fa-home me-1"></i>Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'allProducts' %}"><i class="fas fa-store me-1"></i>Shop</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container checkout-container">
+        <a href="{% url 'my-cart' %}" class="back-link">
+            <i class="fas fa-arrow-left"></i> Back to Cart
+        </a>
+
+        <div class="row">
+            <div class="col-lg-7">
+                <div class="checkout-card">
+                    <h2 class="mb-4">Checkout</h2>
+                    <form action="" method="POST">
+                        {% csrf_token %}
+                        
+                        <!-- Personal Information -->
+                        <div class="form-section">
+                            <div class="form-section-title">
+                                <i class="fas fa-user"></i> Personal Information
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Name</label>
+                                    <input required class="form-control" type="text" name="name" value="{{user.name}}" placeholder="Enter your full name">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Email</label>
+                                    <input required class="form-control" type="email" name="email" value="{{user.email}}" placeholder="Enter your email">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Shipping Information -->
+                        <div class="form-section">
+                            <div class="form-section-title">
+                                <i class="fas fa-shipping-fast"></i> Shipping Information
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Address</label>
+                                <input required class="form-control" type="text" name="address" value="{{user.address}}" placeholder="Enter your shipping address">
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Contact Number</label>
+                                    <input required class="form-control" type="text" name="contact" value="{{user.contact}}" placeholder="Enter your contact number">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">PIN Code</label>
+                                    <input required class="form-control" type="text" name="pincode" value="{{user.pin}}" placeholder="Enter PIN code">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Payment Information -->
+                        <div class="form-section">
+                            <div class="form-section-title">
+                                <i class="fas fa-credit-card"></i> Payment Information
+                            </div>
+                            <div class="payment-cards">
+                                <i class="fab fa-cc-visa"></i>
+                                <i class="fab fa-cc-mastercard"></i>
+                                <i class="fab fa-cc-amex"></i>
+                                <i class="fab fa-cc-discover"></i>
+                            </div>
+                            <div class="mb-3 position-relative">
+                                <label class="form-label">Card Number</label>
+                                <input required class="form-control" type="text" name="card_number" placeholder="1234 5678 9012 3456" maxlength="19">
+                                <i class="fas fa-credit-card card-input-icon"></i>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Expiry Date</label>
+                                    <input required class="form-control" type="text" name="card_expiry" placeholder="MM/YY" maxlength="5">
+                                </div>
+                                <div class="col-md-6 mb-3 position-relative">
+                                    <label class="form-label">CVV</label>
+                                    <input required class="form-control" type="password" name="card_cvv" placeholder="123" maxlength="3">
+                                    <i class="fas fa-question-circle card-input-icon" title="3-digit security code on the back of your card"></i>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Cardholder Name</label>
+                                <input required class="form-control" type="text" name="card_name" placeholder="Enter name as on card">
+                            </div>
+                        </div>
+
+                        <input type="hidden" name="total" value="{{cart.total}}">
+                        
+                        <button type="submit" class="btn btn-primary btn-place-order w-100">
+                            <i class="fas fa-lock me-2"></i>Place Order & Pay ₹{{cart.total}}
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <div class="checkout-card">
+                    <h3 class="mb-4">Order Summary</h3>
+                    
+                    <div class="order-summary">
+                        {% for cp in cart.cartproduct_set.all %}
+                        <div class="product-item">
+                            <img class="product-image" src="{{cp.product.p_image.url}}" alt="{{cp.product.p_name}}">
+                            <div class="product-details">
+                                <h6 class="product-name">{{cp.product.p_name}}</h6>
+                                <div class="product-price">
+                                    <span>₹{{cp.product.p_price|floatformat:2}} × {{cp.quantity}}</span>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <span class="fw-bold">₹{{cp.subtotal|floatformat:2}}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+
+                        <div class="d-flex justify-content-between align-items-center mt-4">
+                            <span class="h5 mb-0">Total</span>
+                            <span class="total-amount">₹{{cart.total}}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'js/custom.js' %}"></script>
+    <script>
+        // Format card number with spaces
+        document.querySelector('input[name="card_number"]').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+            let formattedValue = '';
+            
+            for(let i = 0; i < value.length; i++) {
+                if(i > 0 && i % 4 === 0) {
+                    formattedValue += ' ';
+                }
+                formattedValue += value[i];
+            }
+            
+            e.target.value = formattedValue;
+        });
+        
+        // Format expiry date (MM/YY)
+        document.querySelector('input[name="card_expiry"]').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/[^0-9]/gi, '');
+            
+            if(value.length > 0) {
+                // Ensure month starts with 0 or 1
+                if (value.charAt(0) > '1') {
+                    value = '0' + value.charAt(0);
+                }
+                
+                // Ensure month not greater than 12
+                if (value.length >= 2) {
+                    let month = parseInt(value.substring(0, 2));
+                    if (month > 12) {
+                        value = '12' + value.substring(2);
+                    }
+                }
+            }
+            
+            if(value.length > 2) {
+                e.target.value = value.substring(0, 2) + '/' + value.substring(2, 4);
+            } else {
+                e.target.value = value;
+            }
+        });
+        
+        // Allow only numeric input for CVV
+        document.querySelector('input[name="card_cvv"]').addEventListener('input', function(e) {
+            e.target.value = e.target.value.replace(/[^0-9]/gi, '');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,684 @@
+{% block content %}
+<div class="query-tool-container">
+    <!-- Page Header -->
+    <header class="page-header">
+        <h1>Database Query Tool</h1>
+        <p class="subtitle">Interactive SQL interface with advanced filtering capabilities</p>
+        <div class="header-decoration"></div>
+    </header>
+
+    <div class="content-wrapper">
+        <!-- Query Builder Section -->
+        <section class="query-builder-section">
+            <div class="section-header">
+                <i class="fas fa-code"></i>
+                <span>Query Builder</span>
+            </div>
+            
+            <div class="card query-card">
+                <form method="post" class="needs-validation" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="form-row">
+                        <div class="form-column">
+                            <div class="input-group">
+                                <label for="{{ form.model.id_for_label }}">
+                                    <i class="fas fa-database"></i>
+                                    <span>Data Model</span>
+                                </label>
+                                {{ form.model }}
+                            </div>
+                        </div>
+                        
+                        <div class="form-column">
+                            <div class="input-group">
+                                <label for="{{ form.fields.id_for_label }}">
+                                    <i class="fas fa-columns"></i>
+                                    <span>Select Fields</span>
+                                </label>
+                                {{ form.fields }}
+                                <small>Leave blank to select all available fields</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="input-group wide">
+                        <label for="{{ form.filters.id_for_label }}">
+                            <i class="fas fa-filter"></i>
+                            <span>Filter Conditions</span>
+                        </label>
+                        {{ form.filters }}
+                        <small class="helper-text">
+                            <i class="fas fa-lightbulb"></i>
+                            <span>Example: p_price__gt=1000, category="electronics"</span>
+                        </small>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-column">
+                            <div class="input-group">
+                                <label for="{{ form.order_by.id_for_label }}">
+                                    <i class="fas fa-sort-amount-down"></i>
+                                    <span>Order By</span>
+                                </label>
+                                {{ form.order_by }}
+                                <small>Use -field for descending order</small>
+                            </div>
+                        </div>
+                        
+                        <div class="form-column">
+                            <div class="input-group">
+                                <label for="{{ form.limit.id_for_label }}">
+                                    <i class="fas fa-list-ol"></i>
+                                    <span>Result Limit</span>
+                                </label>
+                                {{ form.limit }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="action-bar">
+                        <button type="submit" class="btn-execute">
+                            <i class="fas fa-play"></i>
+                            <span>Execute Query</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+        
+        <!-- Error Messages -->
+        {% if error_message %}
+        <section class="error-section">
+            <div class="error-box">
+                <div class="error-icon">
+                    <i class="fas fa-exclamation-circle"></i>
+                </div>
+                <div class="error-content">
+                    <h3>Query Error</h3>
+                    <p>{{ error_message }}</p>
+                </div>
+                <button type="button" class="close-btn" data-bs-dismiss="alert">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </section>
+        {% endif %}
+        
+        <!-- Results Section -->
+        {% if results %}
+        <section class="results-section">
+            <div class="section-header">
+                <i class="fas fa-table"></i>
+                <span>Query Results</span>
+                <div class="records-counter">{{ results|length }} records</div>
+            </div>
+            
+            <div class="results-container">
+                <div class="results-table-wrapper">
+                    <table class="results-table">
+                        <thead>
+                            <tr>
+                                {% for header in headers %}
+                                <th>{{ header }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in results %}
+                            <tr>
+                                {% for value in row %}
+                                <td>{{ value }}</td>
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="results-footer">
+                    <div class="status">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Query executed successfully</span>
+                    </div>
+                    <div class="actions">
+                        <button class="action-btn" onclick="window.print()">
+                            <i class="fas fa-print"></i>
+                            <span>Print</span>
+                        </button>
+                        <button class="action-btn primary" id="exportBtn">
+                            <i class="fas fa-file-export"></i>
+                            <span>Export</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+        {% endif %}
+    </div>
+</div>
+
+{% block extra_scripts %}
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<!-- Font Awesome Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+    /* Core Variables */
+    :root {
+        --primary-color: #2563eb;
+        --primary-light: rgba(37, 99, 235, 0.1);
+        --primary-dark: #1d4ed8;
+        --success-color: #10b981;
+        --success-light: rgba(16, 185, 129, 0.1);
+        --danger-color: #ef4444;
+        --danger-light: #fff5f5;
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f2937;
+        --gray-900: #111827;
+        --border-radius-sm: 4px;
+        --border-radius: 6px;
+        --border-radius-lg: 8px;
+        --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+        --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        --transition: all 0.2s ease;
+    }
+
+    /* Base Styles */
+    body {
+        font-family: 'Roboto', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        background-color: var(--gray-50);
+        color: var(--gray-800);
+        line-height: 1.5;
+        margin: 0;
+        padding: 0;
+    }
+
+    .query-tool-container {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    /* Page Header */
+    .page-header {
+        text-align: center;
+        margin-bottom: 2.5rem;
+        position: relative;
+    }
+
+    .page-header h1 {
+        font-size: 2rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header .subtitle {
+        font-size: 1rem;
+        color: var(--gray-500);
+        margin-bottom: 1.5rem;
+    }
+
+    .header-decoration {
+        width: 60px;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-color), var(--primary-dark));
+        border-radius: 2px;
+        margin: 0 auto;
+    }
+
+    .content-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+
+    /* Section Styles */
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+        font-weight: 500;
+        font-size: 1.125rem;
+        color: var(--gray-700);
+    }
+
+    .section-header i {
+        color: var(--primary-color);
+    }
+
+    .query-card {
+        background-color: white;
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow-lg);
+        padding: 2rem;
+        border: 1px solid var(--gray-200);
+    }
+
+    /* Form Styles */
+    .form-row {
+        display: flex;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .form-column {
+        flex: 1;
+    }
+
+    .input-group {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 1.5rem;
+    }
+
+    .input-group.wide {
+        margin-bottom: 1.5rem;
+    }
+
+    .input-group label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        color: var(--gray-700);
+    }
+
+    .input-group label i {
+        color: var(--primary-color);
+        font-size: 0.875rem;
+    }
+
+    input, select, textarea {
+        border: 1px solid var(--gray-300);
+        border-radius: var(--border-radius);
+        padding: 0.75rem 1rem;
+        font-size: 0.9375rem;
+        background-color: white;
+        color: var(--gray-800);
+        transition: var(--transition);
+        width: 100%;
+    }
+
+    input:focus, select:focus, textarea:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px var(--primary-light);
+    }
+
+    small {
+        color: var(--gray-500);
+        margin-top: 0.375rem;
+        font-size: 0.75rem;
+    }
+
+    .helper-text {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+    }
+
+    .helper-text i {
+        color: var(--gray-500);
+    }
+
+    /* Buttons */
+    .action-bar {
+        margin-top: 2rem;
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .btn-execute {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        background-color: var(--primary-color);
+        color: white;
+        font-weight: 500;
+        padding: 0.75rem 1.5rem;
+        border-radius: var(--border-radius);
+        border: none;
+        cursor: pointer;
+        transition: var(--transition);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .btn-execute:hover {
+        background-color: var(--primary-dark);
+        box-shadow: var(--shadow);
+        transform: translateY(-1px);
+    }
+
+    /* Error Styles */
+    .error-section {
+        margin-bottom: 1.5rem;
+    }
+
+    .error-box {
+        display: flex;
+        background-color: var(--danger-light);
+        border-left: 4px solid var(--danger-color);
+        border-radius: var(--border-radius);
+        padding: 1.25rem;
+        position: relative;
+    }
+
+    .error-icon {
+        color: var(--danger-color);
+        font-size: 1.5rem;
+        margin-right: 1rem;
+    }
+
+    .error-content h3 {
+        color: var(--gray-800);
+        font-size: 1rem;
+        margin: 0 0 0.5rem;
+        font-weight: 600;
+    }
+
+    .error-content p {
+        color: var(--gray-700);
+        margin: 0;
+    }
+
+    .close-btn {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: transparent;
+        border: none;
+        color: var(--gray-500);
+        cursor: pointer;
+        font-size: 1rem;
+    }
+
+    /* Results Styles */
+    .results-section {
+        margin-top: 1rem;
+    }
+
+    .section-header {
+        display: flex;
+        align-items: center;
+    }
+
+    .records-counter {
+        margin-left: auto;
+        background-color: var(--success-light);
+        color: var(--success-color);
+        font-size: 0.875rem;
+        font-weight: 500;
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--border-radius-lg);
+    }
+
+    .results-container {
+        background-color: white;
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--gray-200);
+        overflow: hidden;
+    }
+
+    .results-table-wrapper {
+        overflow-x: auto;
+    }
+
+    .results-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .results-table th {
+        background-color: var(--gray-100);
+        color: var(--gray-700);
+        font-weight: 500;
+        text-align: left;
+        padding: 1rem;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    .results-table td {
+        padding: 1rem;
+        border-bottom: 1px solid var(--gray-200);
+        color: var(--gray-800);
+    }
+
+    .results-table tr:hover {
+        background-color: var(--gray-50);
+    }
+
+    .results-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem;
+        background-color: var(--gray-50);
+        border-top: 1px solid var(--gray-200);
+    }
+
+    .status {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--gray-600);
+    }
+
+    .status i {
+        color: var(--success-color);
+    }
+
+    .actions {
+        display: flex;
+        gap: 0.75rem;
+    }
+
+    .action-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        border-radius: var(--border-radius);
+        background-color: white;
+        color: var(--gray-700);
+        border: 1px solid var(--gray-300);
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .action-btn:hover {
+        background-color: var(--gray-50);
+        border-color: var(--gray-400);
+    }
+
+    .action-btn.primary {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+        color: white;
+    }
+
+    .action-btn.primary:hover {
+        background-color: var(--primary-dark);
+    }
+
+    /* Toast Notification */
+    .toast-notification {
+        position: fixed;
+        right: 1rem;
+        bottom: 1rem;
+        background-color: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-xl);
+        padding: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        z-index: 1000;
+        border-left: 4px solid var(--success-color);
+        min-width: 300px;
+    }
+
+    .toast-icon {
+        background-color: var(--success-light);
+        color: var(--success-color);
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .toast-content {
+        flex: 1;
+    }
+
+    .toast-title {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+        color: var(--gray-800);
+    }
+
+    .toast-message {
+        font-size: 0.875rem;
+        color: var(--gray-600);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .form-row {
+            flex-direction: column;
+            gap: 0;
+        }
+    }
+
+    /* Print styles */
+    @media print {
+        .query-tool-container {
+            padding: 0;
+        }
+
+        .page-header, .query-builder-section, .error-section, .actions, .results-footer {
+            display: none;
+        }
+
+        .results-container {
+            box-shadow: none;
+            border: none;
+        }
+
+        .results-table th {
+            background-color: white;
+            color: black;
+        }
+    }
+</style>
+
+<script>
+    // Form validation
+    document.addEventListener('DOMContentLoaded', function() {
+        const forms = document.querySelectorAll('.needs-validation');
+        
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', event => {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                
+                form.classList.add('was-validated');
+            }, false);
+        });
+        
+        // Export functionality
+        const exportBtn = document.getElementById('exportBtn');
+        if (exportBtn) {
+            exportBtn.addEventListener('click', function() {
+                // Get table data
+                const table = document.querySelector('.results-table');
+                if (!table) return;
+                
+                let csvContent = "data:text/csv;charset=utf-8,";
+                
+                // Add headers
+                const headers = [];
+                table.querySelectorAll('thead th').forEach(th => {
+                    headers.push('"' + th.innerText.trim() + '"');
+                });
+                csvContent += headers.join(',') + '\r\n';
+                
+                // Add rows
+                table.querySelectorAll('tbody tr').forEach(row => {
+                    const rowData = [];
+                    row.querySelectorAll('td').forEach(cell => {
+                        rowData.push('"' + cell.innerText.trim().replace(/"/g, '""') + '"');
+                    });
+                    csvContent += rowData.join(',') + '\r\n';
+                });
+                
+                // Create and trigger download
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement('a');
+                link.setAttribute('href', encodedUri);
+                link.setAttribute('download', 'query_results_' + new Date().toISOString().split('T')[0] + '.csv');
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                // Show success toast
+                showToast('Export Successful', 'Data has been exported to CSV format');
+            });
+        }
+    });
+    
+    // Toast notification
+    function showToast(title, message) {
+        // Create toast element
+        const toast = document.createElement('div');
+        toast.className = 'toast-notification';
+        toast.innerHTML = `
+            <div class="toast-icon">
+                <i class="fas fa-check"></i>
+            </div>
+            <div class="toast-content">
+                <div class="toast-title">${title}</div>
+                <div class="toast-message">${message}</div>
+            </div>
+        `;
+        
+        // Add to document
+        document.body.appendChild(toast);
+        
+        // Auto remove after delay
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => {
+                document.body.removeChild(toast);
+            }, 300);
+        }, 3000);
+    }
+</script>
+{% endblock %}
+{% endblock %}

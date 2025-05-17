@@ -1,0 +1,712 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ perfume.p_name }} - Nextora</title>
+    <!-- Enhanced SEO Meta Tags -->
+    <meta name="description" content="{{ perfume.p_desc|truncatewords:25 }}">
+    <meta name="keywords" content="eyeglasses, {{ perfume.p_name }}, {{ perfume.cat }}, {{ perfume.get_shape_display }}, Nextora">
+    <!-- CSS -->
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            color: #333;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .product-container {
+            padding: 2rem 0;
+        }
+        .product-image {
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            background: white;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            height: 350px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .product-image img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            transition: transform 0.3s ease;
+        }
+        .product-image:hover img {
+            transform: scale(1.05);
+        }
+        .product-details {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        .product-title {
+            color: #2c3e50;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+        .product-description {
+            color: #666;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+        .product-meta {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .meta-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .meta-item:last-child {
+            margin-bottom: 0;
+        }
+        .meta-label {
+            color: #6c757d;
+            width: 120px;
+            font-weight: 500;
+        }
+        .meta-value {
+            color: #2c3e50;
+            font-weight: 500;
+        }
+        .price-tag {
+            font-size: 2rem;
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+        .stock-status {
+            display: inline-block;
+            padding: 0.35rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+        }
+        .in-stock {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .out-of-stock {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .btn-add-cart {
+            padding: 0.8rem 2rem;
+            font-size: 1.1rem;
+            border-radius: 50px;
+        }
+        .btn-back {
+            color: #6c757d;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .btn-back:hover {
+            color: #343a40;
+        }
+        
+        /* Section Styling */
+        .product-section {
+            margin-top: 3rem;
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        .section-title {
+            color: #2c3e50;
+            font-size: 1.75rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid #f8f9fa;
+            font-weight: 600;
+            position: relative;
+        }
+        .section-title::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -2px;
+            width: 80px;
+            height: 2px;
+            background-color: #007bff;
+        }
+        
+        /* Recommended Products Styling */
+        .recommended-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            overflow: hidden;
+            height: 100%;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .recommended-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        .recommended-img {
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            background: #f8f9fa;
+        }
+        .recommended-img img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        .recommended-details {
+            padding: 1.25rem;
+        }
+        .recommended-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2c3e50;
+            height: 3em; /* Limit to 2 lines of text */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+        .recommended-price {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin: 0.5rem 0;
+        }
+        .recommended-rating {
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+        .star-icon {
+            color: #ffc107;
+            margin-right: 2px;
+        }
+        .recommendation-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            z-index: 10;
+        }
+        .similar-badge {
+            background-color: #e9f5ff;
+            color: #007bff;
+        }
+        .top-rated-badge {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .most-ordered-badge {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        /* Review Section Styles */
+        .reviews-section {
+            margin-top: 3rem;
+        }
+        .rating-summary {
+            text-align: center;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+        }
+        .rating-number {
+            font-size: 3rem;
+            font-weight: 700;
+            line-height: 1;
+            color: #2c3e50;
+        }
+        .review-item {
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            margin-bottom: 1.25rem;
+            transition: transform 0.2s ease;
+        }
+        .review-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .reviewer-name {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .review-date {
+            color: #6c757d;
+            font-size: 0.875rem;
+        }
+        .star-rating {
+            color: #ffc107;
+            margin: 0.5rem 0;
+        }
+        .review-comment {
+            color: #4a5568;
+            line-height: 1.6;
+        }
+        
+        /* Tab Navigation */
+        .product-tabs {
+            margin-top: 3rem;
+        }
+        .nav-tabs {
+            border-bottom: 2px solid #e9ecef;
+        }
+        .nav-tabs .nav-link {
+            border: none;
+            color: #6c757d;
+            font-weight: 500;
+            padding: 1rem 1.5rem;
+        }
+        .nav-tabs .nav-link.active {
+            color: #007bff;
+            background-color: transparent;
+            border-bottom: 2px solid #007bff;
+        }
+        .tab-content {
+            background: white;
+            border-radius: 0 0 15px 15px;
+            padding: 2rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-laptop me-2"></i>Nextora
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarMain">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/"><i class="fas fa-home me-1"></i>Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'allProducts' %}"><i class="fas fa-store me-1"></i>Shop</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'my-cart' %}">
+                            <i class="fas fa-shopping-cart me-1"></i>Cart
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container product-container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Breadcrumbs -->
+        <nav aria-label="breadcrumb" class="my-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'allProducts' %}">Shop</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'allProducts' %}?category={{ perfume.cat.id }}">{{ perfume.cat }}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ perfume.p_name }}</li>
+            </ol>
+        </nav>
+
+        <!-- Product Info Section -->
+        <div class="row">
+            <!-- Product Images -->
+            <div class="col-lg-5 mb-4">
+                <div class="product-image">
+                    <img src="{{ perfume.p_image.url }}" alt="{{ perfume.p_name }}" class="img-fluid">
+                </div>
+            </div>
+            
+            <!-- Product Details -->
+            <div class="col-lg-7">
+                <div class="product-details">
+                    <h1 class="product-title">{{ perfume.p_name }}</h1>
+                    
+                    <!-- Rating Summary -->
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="star-rating me-2">
+                            {% for i in "12345"|make_list %}
+                                {% if forloop.counter <= avg_rating %}
+                                    <i class="fas fa-star"></i>
+                                {% elif forloop.counter <= avg_rating|add:0.5 %}
+                                    <i class="fas fa-star-half-alt"></i>
+                                {% else %}
+                                    <i class="far fa-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <a href="#reviews" class="text-decoration-none">
+                            <span class="text-muted">{{ avg_rating|floatformat:1 }} ({{ total_reviews }} reviews)</span>
+                        </a>
+                    </div>
+                    
+                    <!-- Price -->
+                    <div class="price-tag">₹{{ perfume.p_price }}</div>
+                    
+                    <!-- Stock Status -->
+                    {% if perfume.p_quantity > 0 %}
+                        <span class="stock-status in-stock mb-3">
+                            <i class="fas fa-check-circle me-2"></i>In Stock
+                        </span>
+                    {% else %}
+                        <span class="stock-status out-of-stock mb-3">
+                            <i class="fas fa-times-circle me-2"></i>Out of Stock
+                        </span>
+                    {% endif %}
+                    
+                    <!-- Short Description -->
+                    <p class="product-description">{{ perfume.p_desc }}</p>
+                    
+                    <!-- Product Meta Info -->
+                    <div class="product-meta">
+                        <div class="meta-item">
+                            <span class="meta-label">Category:</span>
+                            <span class="meta-value">{{ perfume.cat }}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Frame Shape:</span>
+                            <span class="meta-value">{{ perfume.get_shape_display }}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Seller:</span>
+                            <span class="meta-value"><a href="{% url 'seller_products' seller.id %}">{{ perfume.seller }}</a></span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Availability:</span>
+                            <span class="meta-value">
+                                {% if perfume.p_quantity > 0 %}
+                                    {{ perfume.p_quantity }} in stock
+                                {% else %}
+                                    Out of stock
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <!-- Add to Cart Button -->
+                    <div class="d-flex gap-2">
+                        {% if perfume.p_quantity > 0 %}
+                            <a href="/add-to-cart/{{ perfume.p_id }}" class="btn btn-primary btn-add-cart flex-grow-1">
+                                <i class="fas fa-shopping-cart me-2"></i>Add to Cart
+                            </a>
+                            <a href="/add_to_wishlist/{{ perfume.p_id }}" class="btn btn-outline-secondary">
+                                <i class="far fa-heart"></i>
+                            </a>
+                        {% else %}
+                            <button class="btn btn-secondary btn-add-cart flex-grow-1" disabled>
+                                <i class="fas fa-ban me-2"></i>Out of Stock
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Tabs -->
+        <div class="product-tabs">
+            <ul class="nav nav-tabs" id="productTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="recommendations-tab" data-bs-toggle="tab" data-bs-target="#recommendations" type="button" role="tab" aria-controls="recommendations" aria-selected="true">Recommended For You</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" type="button" role="tab" aria-controls="reviews" aria-selected="false">Customer Reviews</button>
+                </li>
+            </ul>
+            <div class="tab-content" id="productTabsContent">
+                <!-- Recommendations Tab -->
+                <div class="tab-pane fade show active" id="recommendations" role="tabpanel" aria-labelledby="recommendations-tab">
+                    <h3 class="section-title">Recommended Based on Your Selection</h3>
+                    <div class="row">
+                        {% if similar_products %}
+                            {% for product in similar_products %}
+                                <div class="col-md-4 col-lg-4 mb-4">
+                                    <div class="recommended-card position-relative">
+                                        <span class="recommendation-badge similar-badge">Similar Style</span>
+                                        <div class="recommended-img">
+                                            <a href="/view-product/{{ product.p_id }}">
+                                                <img src="{{ product.p_image.url }}" alt="{{ product.p_name }}" class="img-fluid">
+                                            </a>
+                                        </div>
+                                        <div class="recommended-details">
+                                            <h5 class="recommended-title">{{ product.p_name }}</h5>
+                                            <div class="recommended-rating">
+                                                {% if product.avg_rating %}
+                                                <i class="fas fa-star star-icon"></i>
+                                                {{ product.avg_rating|floatformat:1 }} ({{ product.review_count }} reviews)
+                                            {% else %}
+                                                <i class="far fa-star star-icon"></i>
+                                                No ratings yet
+                                            {% endif %}
+                                            </div>
+                                            <div class="recommended-price">₹{{ product.p_price }}</div>
+                                            <div class="d-grid">
+                                                <a href="/add-to-cart/{{ product.p_id }}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-shopping-cart me-1"></i>Add to Cart
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    
+                    <h3 class="section-title mt-5">Top Rated Products</h3>
+                    <div class="row">
+                        {% if top_rated_products %}
+                            {% for product in top_rated_products %}
+                                <div class="col-md-4 col-lg-4 mb-4">
+                                    <div class="recommended-card position-relative">
+                                        <span class="recommendation-badge top-rated-badge">Top Rated</span>
+                                        <div class="recommended-img">
+                                            <a href="/view-product/{{ product.p_id }}">
+                                                <img src="{{ product.p_image.url }}" alt="{{ product.p_name }}" class="img-fluid">
+                                            </a>
+                                        </div>
+                                        <div class="recommended-details">
+                                            <h5 class="recommended-title">{{ product.p_name }}</h5>
+                                            <div class="recommended-rating">
+                                                {% if product.avg_rating %}
+                                                    <i class="fas fa-star star-icon"></i>
+                                                    {{ product.avg_rating|floatformat:1 }} ({{ product.review_count }} reviews)
+                                                {% else %}
+                                                    <i class="far fa-star star-icon"></i>
+                                                    No ratings yet
+                                                {% endif %}
+                                            </div>
+                                            <div class="recommended-price">₹{{ product.p_price }}</div>
+                                            <div class="d-grid">
+                                                <a href="/add-to-cart/{{ product.p_id }}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-shopping-cart me-1"></i>Add to Cart
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <h3 class="section-title mt-5">Bestsellers</h3>
+                    <div class="row">
+                        {% if most_ordered_products %}
+                            {% for product in most_ordered_products %}
+                                <div class="col-md-4 col-lg-4 mb-4">
+                                    <div class="recommended-card position-relative">
+                                        <span class="recommendation-badge most-ordered-badge">Bestseller</span>
+                                        <div class="recommended-img">
+                                            <a href="/view-product/{{ product.p_id }}">
+                                                <img src="{{ product.p_image.url }}" alt="{{ product.p_name }}" class="img-fluid">
+                                            </a>
+                                        </div>
+                                        <div class="recommended-details">
+                                            <h5 class="recommended-title">{{ product.p_name }}</h5>
+                                            <div class="recommended-rating">
+                                                {% if product.avg_rating %}
+                                                    <i class="fas fa-star star-icon"></i>
+                                                    {{ product.avg_rating|floatformat:1 }} ({{ product.review_count }} reviews)
+                                                {% else %}
+                                                    <i class="far fa-star star-icon"></i>
+                                                    No ratings yet
+                                                {% endif %}
+                                            </div>
+                                            <div class="recommended-price">₹{{ product.p_price }}</div>
+                                            <div class="d-grid">
+                                                <a href="/add-to-cart/{{ product.p_id }}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-shopping-cart me-1"></i>Add to Cart
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Reviews Tab -->
+                <div class="tab-pane fade" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
+                    <h3 class="section-title">Customer Reviews</h3>
+                    <!-- Review Items -->
+                    {% if recent_reviews %}
+                    <!-- Rating Summary -->
+                    <div class="rating-summary mb-4">
+                        <div class="row align-items-center">
+                            <div class="col-md-4 text-center">
+                                <div class="rating-number">{{ avg_rating|floatformat:1 }}</div>
+                                <div class="star-rating mb-2">
+                                    {% for i in "12345"|make_list %}
+                                        {% if forloop.counter <= avg_rating|floatformat:0 %}
+                                            <i class="fas fa-star"></i>
+                                        {% elif forloop.counter == avg_rating|floatformat:0|add:"1" and avg_rating|floatformat:1|slice:"-1:" != "0" %}
+                                            <i class="fas fa-star-half-alt"></i>
+                                        {% else %}
+                                            <i class="far fa-star"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                                <div class="text-muted small">Based on {{ total_reviews }} reviews</div>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="review-breakdown">
+                                    <!-- You can add rating breakdown bars here if you have the data -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Review List -->
+                    {% for review in recent_reviews %}
+                        <div class="review-item">
+                            <div class="card-body">
+                                <div class="review-header">
+                                    <span class="reviewer-name">{{ review.user.username }}</span>
+                                    <span class="review-date">{{ review.created_at|date:"F d, Y" }}</span>
+                                </div>
+                                <div class="star-rating">
+                                    {% for i in "12345"|make_list %}
+                                        {% if forloop.counter <= review.rating %}
+                                            <i class="fas fa-star"></i>
+                                        {% else %}
+                                            <i class="far fa-star"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                                <p class="review-comment mb-0">{{ review.comment }}</p>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    {% if total_reviews > 5 %}
+                        <div class="text-center mt-3">
+                            <button class="btn btn-outline-primary">View All {{ total_reviews }} Reviews</button>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center text-muted py-5">
+                        <i class="far fa-comment-dots fa-3x mb-3"></i>
+                        <p>No reviews yet. Be the first to review this product!</p>
+                    </div>
+                {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white mt-5 py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5>Nextora</h5>
+                    <p>Your premium eyewear destination.</p>
+                </div>
+                <div class="col-md-4">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="/" class="text-white">Home</a></li>
+                        <li><a href="{% url 'allProducts' %}" class="text-white">Shop</a></li>
+                        <li><a href="/my-cart" class="text-white">Cart</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>Contact Us</h5>
+                    <address>
+                        <p>Email: info@Nextora.com</p>
+                        <p>Phone: +91 1234567890</p>
+                    </address>
+                </div>
+            </div>
+            <div class="text-center mt-3">
+                <p>© 2025 Nextora. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'js/custom.js' %}"></script>
+    <script>
+        // Initialize product tabs
+        document.addEventListener('DOMContentLoaded', function() {
+        // Tab navigation
+        var tabLinks = document.querySelectorAll('#productTabs button');
+        var tabContents = document.querySelectorAll('.tab-pane');
+        
+        tabLinks.forEach(function(link) {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Remove active class from all tabs
+                tabLinks.forEach(function(tab) {
+                    tab.classList.remove('active');
+                    tab.setAttribute('aria-selected', 'false');
+                });
+                
+                // Hide all tab contents
+                tabContents.forEach(function(content) {
+                    content.classList.remove('show', 'active');
+                });
+                
+                // Activate the clicked tab
+                this.classList.add('active');
+                this.setAttribute('aria-selected', 'true');
+                
+                // Show the corresponding content
+                var target = this.getAttribute('data-bs-target');
+                document.querySelector(target).classList.add('show', 'active');
+            });
+        });
+        
+        // Link to reviews tab from product details
+        document.getElementById('review-link').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('reviews-tab').click();
+        });
+    });
+    </script>
+</body>
+</html>

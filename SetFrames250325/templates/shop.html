@@ -1,0 +1,707 @@
+-->
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="Nextora - Your Premium Eyewear Destination">
+    <meta name="keywords" content="eyewear, glasses, lenses, frames">
+    
+    <title>Nextora Shop</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="{% static 'css/tiny-slider.css'%}" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+
+    <style>
+        /* Custom Styles */
+        .hero-section {
+            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('{% static "images/hero-bg.jpg" %}');
+            background-size: cover;
+            padding: 100px 0;
+            color: white;
+            margin-bottom: 2rem;
+        }
+        
+        .filter-section {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+        }
+
+        .product-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+            border: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border-radius: 12px;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+
+        .product-image {
+            height: 250px;
+            object-fit: cover;
+            border-radius: 12px 12px 0 0;
+        }
+
+        .product-details {
+            padding: 1.5rem;
+        }
+
+        .price-tag {
+            font-size: 1.25rem;
+            color: #2f2f2f;
+            font-weight: bold;
+        }
+
+        .category-badge {
+            background: #e9ecef;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+
+        .stock-status {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .btn-cart {
+            background: #212529;
+            color: white;
+            border: none;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+        }
+
+        .btn-cart:hover {
+            background: #0d6efd;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .btn-view {
+            border: 1px solid #212529;
+            color: #212529;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+        }
+
+        .btn-view:hover {
+            background: #212529;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Enhanced Filter Styles */
+        .filter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.2rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .filter-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin: 0;
+        }
+
+        .filter-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-reset {
+            background-color: #f8f9fa;
+            color: #6c757d;
+            border: 1px solid #dee2e6;
+            padding: 0.375rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-reset:hover {
+            background-color: #e9ecef;
+            color: #495057;
+        }
+
+        .filter-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        align-items: center; /* was flex-end; center often looks cleaner */
+        margin-bottom: 15px;
+        }
+
+        .filter-item {
+        flex: 1;
+        min-width: 160px;
+        }
+
+        .filter-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 0.4rem;
+            display: block;
+        }
+
+        .search-input, .form-select, .price-input {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 0.5rem;
+            width: 100%;
+            transition: all 0.2s ease;
+            background-color: #f8f9fa;
+        }
+
+        .search-input:focus, .form-select:focus, .price-input:focus {
+            border-color: #007bff;
+            background-color: #fff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.15);
+        }
+
+        .price-item {
+  display: flex;
+  gap: 5px;
+  align-items: center; /* ensures labels and inputs align horizontally */
+}
+
+        /* Active Filters Display */
+        .active-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 1rem;
+        }
+
+        .filter-tag {
+            background: #e9ecef;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s ease;
+        }
+
+        .filter-tag:hover {
+            background: #dee2e6;
+        }
+
+        .filter-tag .remove {
+            cursor: pointer;
+            color: #dc3545;
+            font-size: 1.1rem;
+        }
+
+        /* Rating Stars Styling */
+        .rating-stars {
+            color: #ffc107;
+        }
+        
+        .rating-count {
+            color: #6c757d;
+            font-size: 0.85rem;
+            margin-left: 5px;
+        }
+
+        /* Enhanced Product Card */
+        .product-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(13, 110, 253, 0.9);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .product-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #212529;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 800px) {
+            .filter-row {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .filter-item {
+                width: 100%;
+            }
+            
+        }
+        body {
+		background-color: #121212; /* dark background */
+		color: #ffffff;            /* white text */
+	}
+
+	/* Override light-colored sections if needed */
+	section, .container, .row {
+		background-color: transparent; /* don't override dark bg */
+	}
+
+	/* Headings */
+	h1, h2, h3, h4, h5, h6 {
+		color: #ffffff;
+	}
+
+	/* Paragraphs and links */
+	p, a {
+		color: #dddddd;
+	}
+
+	/* Buttons (if needed) */
+	.btn {
+		background-color: #333;
+		color: #fff;
+	}
+	.btn:hover {
+		background-color: #007bff; /* Bootstrap blue */
+		color: #fff; /* Ensure text stays visible */
+	}
+
+    </style>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-laptop me-2"></i>Nextora
+            </a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarMain">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/"><i class="fas fa-home me-1"></i>Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{% url 'allProducts' %}">
+                            <i class="fas fa-store me-1"></i>Shop
+                        </a>
+                    </li>
+                
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{% url 'suggest_eyewear' %}">
+                            {% comment %} <i class="fas fa-magic me-1"></i>Frame Advisor {% endcomment %}
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="d-flex align-items-center">
+                    {% if request.session.user_id %}
+                        <a class="nav-link text-white me-3" href="{% url 'my-cart' %}">
+                            <i class="fas fa-shopping-cart"></i>
+                        </a>
+                        <a class="nav-link text-white me-3" href="{% url 'my-orders' %}">
+                            <i class="fas fa-shopping-bag"></i>
+                        </a>
+                        <a class="btn btn-outline-light btn-sm" href="{% url 'logout' %}">
+                            <i class="fas fa-sign-out-alt me-1"></i>Logout
+                        </a>
+                    {% else %}
+                        <a class="btn btn-outline-light btn-sm me-2" href="{% url 'login' %}">
+                            <i class="fas fa-sign-in-alt me-1"></i>Login
+                        </a>
+                        <a class="btn btn-light btn-sm" href="{% url 'register' %}">
+                            <i class="fas fa-user-plus me-1"></i>Register
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="hero-section text-center">
+        <div class="container">
+            <h1 class="display-4">Discover Your Perfect Laptops</h1>
+            <p class="lead">Explore our collection of premium Laptops</p>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Enhanced Filter Section -->
+        <div class="filter-section">
+            <div class="filter-header">
+                <h3 class="filter-title">
+                    <i class="fas fa-filter me-2"></i>Filter Products
+                </h3>
+                <div class="filter-controls">
+                    <button type="button" class="btn-reset" onclick="resetFilters()">
+                        <i class="fas fa-redo-alt me-1"></i>Reset Filters
+                    </button>
+                </div>
+            </div>
+
+            <form id="filterForm" action="{% url 'allProducts' %}" method="get">
+                {% csrf_token %}
+                
+               <!-- Replace the existing filter-row section with this 2-row layout -->
+
+<!-- First row of filters -->
+<div class="filter-row">
+    <!-- Search Filter -->
+    <div class="filter-item">
+        <label class="filter-label">
+            <i class="fas fa-search me-1"></i>Search Products
+        </label>
+        <input type="search" class="search-input" 
+               placeholder="Enter product name..." 
+               name="q" value="{{ request.GET.q }}">
+    </div>
+
+    <!-- Category Filter -->
+    <div class="filter-item">
+        <label class="filter-label">
+            <i class="fas fa-tags me-1"></i>Category
+        </label>
+        <select class="form-select" name="category">
+            <option value="">All Categories</option>
+            {% for category in categories %}
+                <option value="{{ category.id }}" 
+                        {% if category.id == selected_category %}selected{% endif %}>
+                    {{ category.name }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Shape Filter -->
+    <div class="filter-item">
+        <label class="filter-label">
+            {% comment %} <i class="fas fa-glasses me-1"></i>Frame Shape {% endcomment %}
+        </label>
+        {% comment %} <select class="form-select" name="shape">
+            <option value="">All Shapes</option>
+            {% for shape_value, shape_label in shapes %}
+                <option value="{{ shape_value }}" 
+                        {% if shape_value == selected_shape %}selected{% endif %}>
+                    {{ shape_label }}
+                </option>
+            {% endfor %}
+        </select> {% endcomment %}
+    </div>
+</div>
+
+<!-- Second row of filters -->
+<div class="filter-row">
+    <!-- Rating Filter -->
+    <div class="filter-item">
+        <label class="filter-label">
+            <i class="fas fa-star me-1"></i>Minimum Rating
+        </label>
+        <select class="form-select" name="min_rating">
+            <option value="">Any Rating</option>
+            {% for rating in rating_options %}
+                <option value="{{ rating }}" {% if rating|stringformat:"i" == selected_min_rating %}selected{% endif %}>
+                    {{ rating }}+ Stars
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Price Range Filter -->
+    <div class="filter-item price-item">
+        <div>
+            <label class="filter-label">
+                <i class="fas fa-rupee-sign me-1"></i>Min Price
+            </label>
+            <input type="number" class="price-input" 
+                   placeholder="Min" name="min_price" 
+                   value="{{ request.GET.min_price }}" min="0">
+        </div>
+        <div>
+            <label class="filter-label">
+                <i class="fas fa-rupee-sign me-1"></i>Max Price
+            </label>
+            <input type="number" class="price-input" 
+                   placeholder="Max" name="max_price" 
+                   value="{{ request.GET.max_price }}" min="0">
+        </div>
+    </div>
+
+    <!-- Sort Option -->
+    <div class="filter-item">
+        <label class="filter-label">
+            <i class="fas fa-sort me-1"></i>Sort By
+        </label>
+        <select class="form-select" name="sort">
+            <option value="price_asc" {% if request.GET.sort == 'price_asc' %}selected{% endif %}>Price: Low to High</option>
+            <option value="price_desc" {% if request.GET.sort == 'price_desc' %}selected{% endif %}>Price: High to Low</option>
+            <option value="rating_desc" {% if request.GET.sort == 'rating_desc' %}selected{% endif %}>Highest Rated</option>
+        </select>
+    </div>
+
+    <!-- Apply Button -->
+    <div class="filter-item" style="flex: 0 0 auto;">
+        <button type="submit" class="btn btn-primary w-100">
+            <i class="fas fa-search me-1"></i>Apply Filters
+        </button>
+    </div>
+</div>
+
+                <!-- Active Filters Display -->
+                <div class="active-filters">
+                    {% if request.GET.q %}
+                        <span class="filter-tag">
+                            Search: {{ request.GET.q }}
+                            <i class="fas fa-times remove" onclick="removeFilter('q')"></i>
+                        </span>
+                    {% endif %}
+                    {% if request.GET.min_price or request.GET.max_price %}
+                        <span class="filter-tag">
+                            Price: ₹{{ request.GET.min_price|default:0 }} - ₹{{ request.GET.max_price|default:'∞' }}
+                            <i class="fas fa-times remove" onclick="removeFilter('price')"></i>
+                        </span>
+                    {% endif %}
+                    {% if request.GET.category %}
+                        <span class="filter-tag">
+                            Category: {{ selected_category_name }}
+                            <i class="fas fa-times remove" onclick="removeFilter('category')"></i>
+                        </span>
+                    {% endif %}
+                    {% if request.GET.shape %}
+                        <span class="filter-tag">
+                            Shape: {{ selected_shape_name }}
+                            <i class="fas fa-times remove" onclick="removeFilter('shape')"></i>
+                        </span>
+                    {% endif %}
+                    {% if request.GET.min_rating %}
+                        <span class="filter-tag">
+                            Rating: {{ request.GET.min_rating }}+ Stars
+                            <i class="fas fa-times remove" onclick="removeFilter('min_rating')"></i>
+                        </span>
+                    {% endif %}
+                    {% if request.GET.sort %}
+                        <span class="filter-tag">
+                            {% if request.GET.sort == 'price_asc' %}
+                                Sort: Price Low to High
+                            {% elif request.GET.sort == 'price_desc' %}
+                                Sort: Price High to Low
+                            {% elif request.GET.sort == 'rating_desc' %}
+                                Sort: Highest Rated
+                            {% endif %}
+                            <i class="fas fa-times remove" onclick="removeFilter('sort')"></i>
+                        </span>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+
+        <!-- Products Grid -->
+        <div class="row g-4">
+            {% for product in P %}
+            <div class="col-md-4 col-sm-6">
+                <div class="card product-card">
+                    {% if product.p_quantity < 1 %}
+                        <div class="stock-status text-danger">
+                            <i class="fas fa-times-circle me-1"></i>Out of Stock
+                        </div>
+                    {% endif %}
+                    
+                    {% if product.cat %}
+                        <div class="product-badge">{{ product.cat }}</div>
+                    {% endif %}
+                    
+                    <img src="{{ product.p_image.url }}" class="card-img-top product-image" 
+                         alt="{{ product.p_name }}" loading="lazy">
+                    
+                    <div class="card-body product-details">
+                        <h5 class="card-title product-title">{{ product.p_name }}</h5>
+                        
+                        <!-- Product Rating -->
+                        <div class="mb-3">
+                            {% if product.avg_rating %}
+                                <div class="d-flex align-items-center">
+                                    <div class="rating-stars">
+                                        {% for i in "12345"|make_list %}
+                                            {% if forloop.counter <= product.avg_rating|floatformat:0|add:"0" %}
+                                                <i class="fas fa-star"></i>
+                                            {% elif forloop.counter <= product.avg_rating|add:"0.5"|floatformat:0|add:"0" %}
+                                                <i class="fas fa-star-half-alt"></i>
+                                            {% else %}
+                                                <i class="far fa-star"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                    <span class="rating-count">({{ product.avg_rating|floatformat:1 }})</span>
+                                </div>
+                            {% else %}
+                                <div class="text-muted small">
+                                    <i class="far fa-star"></i>
+                                    <i class="far fa-star"></i>
+                                    <i class="far fa-star"></i>
+                                    <i class="far fa-star"></i>
+                                    <i class="far fa-star"></i>
+                                    <span class="rating-count">(No ratings yet)</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="price-tag">₹{{ product.p_price }}</span>
+                            <span class="badge bg-light text-dark">
+                                <i class="fas fa-laptop me-1"></i>{{ product.get_shape_display }}
+                            </span>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            {% if product.p_quantity < 1 %}
+                                <button class="btn btn-danger" disabled>
+                                    <i class="fas fa-times-circle me-1"></i>Out of Stock
+                                </button>
+                            {% else %}
+                                <a href="/add-to-cart/{{ product.p_id }}" class="btn btn-cart">
+                                    <i class="fas fa-shopping-cart me-1"></i>Add to Cart
+                                </a>
+                            {% endif %}
+                            <a href="/view-product/{{ product.p_id }}" class="btn btn-view">
+                                <i class="fas fa-eye me-1"></i>View Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white mt-5 py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4">
+                    <h5><i class="fas fa-laptop me-2"></i>Nextora</h5>
+                    <p class="text-muted">Your vision is unique, and so are your needs. Experience customized comfort and precision with every pair.</p>
+                    <div class="social-links">
+                        <a href="#" class="text-white me-3"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="text-white me-3"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-white me-3"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="text-white"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+                
+                <div class="col-lg-2">
+                    <h6 class="text-uppercase mb-3">Quick Links</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="text-muted">About Us</a></li>
+                        <li><a href="#" class="text-muted">Services</a></li>
+                        <li><a href="#" class="text-muted">Contact Us</a></li>
+                    </ul>
+                </div>
+                
+                <div class="col-lg-2">
+                    <h6 class="text-uppercase mb-3">Support</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="text-muted">FAQ</a></li>
+                        <li><a href="#" class="text-muted">Shipping</a></li>
+                        <li><a href="#" class="text-muted">Returns</a></li>
+                    </ul>
+                </div>
+                
+                <div class="col-lg-4">
+                    <h6 class="text-uppercase mb-3">Newsletter</h6>
+                    <p class="text-muted">Subscribe to receive updates, access to exclusive deals, and more.</p>
+                    <div class="input-group">
+                        <input type="email" class="form-control" placeholder="Enter your email">
+                        <button class="btn btn-primary" type="button">Subscribe</button>
+                    </div>
+                </div>
+            </div>
+            
+            <hr class="my-4">
+            
+            <div class="row align-items-center">
+                <div class="col-md-6 text-center text-md-start">
+                    <p class="mb-0 text-muted">&copy; 2025 Nextora. All rights reserved.</p>
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                    <a href="#" class="text-muted me-3">Privacy Policy</a>
+                    <a href="#" class="text-muted">Terms of Service</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'js/tiny-slider.js' %}"></script>
+    <script src="{% static 'js/custom.js' %}"></script>
+    <script>
+        function removeFilter(type) {
+            const form = document.getElementById('filterForm');
+            if (type === 'price') {
+                form.querySelector('[name="min_price"]').value = '';
+                form.querySelector('[name="max_price"]').value = '';
+            } else {
+                form.querySelector(`[name="${type}"]`).value = '';
+            }
+            form.submit();
+        }
+
+        function resetFilters() {
+            const form = document.getElementById('filterForm');
+            form.reset();
+            form.submit();
+        }
+
+        // Add event listeners to auto-submit on change
+        document.addEventListener('DOMContentLoaded', function() {
+            const filterSelects = document.querySelectorAll('.form-select');
+            const filterInputs = document.querySelectorAll('.search-input, .price-input');
+            
+            // Only submit on blur for inputs to avoid excessive submissions
+            filterInputs.forEach(input => {
+                input.addEventListener('blur', function() {
+                    if (this.value !== this.defaultValue) {
+                        document.getElementById('filterForm').submit();
+                    }
+                });
+                
+                // Also submit on Enter key
+                input.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        document.getElementById('filterForm').submit();
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

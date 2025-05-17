@@ -1,0 +1,410 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="author" content="Untree.co">
+  <link rel="shortcut icon" href="favicon.png">
+  <meta name="description" content="Explore premium lenswear solutions for clear vision and style." />
+  <meta name="keywords" content="bootstrap, bootstrap4, lenses, eyewear" />
+
+		<!-- Bootstrap CSS -->
+		<link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+		<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+		<link href="{% static 'css/tiny-slider.css'%}" rel="stylesheet">
+		<link href="{% static 'css/style.css' %}" rel="stylesheet">
+		<title>LAPTOP SHOPPING</title>
+		<style>
+			.hero {
+				background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('{% static 'images/hero-background.jpg' %}') no-repeat center center/cover;
+				padding: 100px 0;
+			}
+			.product-title {
+				font-weight: bold;
+				color: #333;
+			}
+			.product-thumbnail {
+				transition: transform 0.3s;
+			}
+			.product-thumbnail:hover {
+				transform: scale(1.05);
+			}
+			.btn {
+				border-radius: 50px;
+				padding: 10px 20px;
+				transition: background-color 0.3s;
+			}
+			.btn:hover {
+				background-color:rgb(36, 108, 223);
+				color: white;
+			}
+			/* Dropdown button styling */
+			.nav-item.dropdown .btn {
+				background: none;
+				border: none;
+				color: rgba(255, 255, 255, 0.7);
+				padding: 8px 15px;
+				border-radius: 0;
+			}
+			.nav-item.dropdown .btn:hover,
+			.nav-item.dropdown .btn:focus {
+				color: rgb(255, 255, 255);
+				background: none;
+			}
+			.dropdown-menu {
+				margin-top: 8px;
+				border-radius: 8px;
+				box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+				background-color: #212529;
+				border: 1px solid #373b3e;
+			}
+			.dropdown-item {
+				padding: 8px 20px;
+				color: #fff;
+			}
+			.dropdown-item:hover {
+				background-color: #2c3034;
+				color: #fff;
+			}
+			.dropdown-divider {
+				border-top: 1px solid #373b3e;
+			}
+			.dropdown-item.text-danger {
+				color: #ff6b6b !important;
+			}
+			.dropdown-item.text-danger:hover {
+				background-color: #dc3545;
+				color: #fff !important;
+			}
+			.footer-logo {
+				font-size: 1.5rem;
+				font-weight: bold;
+			}
+			.custom-social a {
+				margin: 0 10px;
+				color: #333;
+				transition: color 0.3s;
+			}
+			.custom-social a:hover {
+				color: #007bff;
+			}
+			.chat-bot-button {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 60px;
+        height: 60px;
+        background-color: #007bff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        text-decoration: none;
+        transition: all 0.3s ease;
+        z-index: 1000;
+    }
+    
+    .chat-bot-button:hover {
+        transform: scale(1.05);
+        background-color: #0056b3;
+        color: white;
+        text-decoration: none;
+    }
+    
+    .chat-bot-icon {
+        font-size: 24px;
+    }
+    
+    .chat-tooltip {
+        position: absolute;
+        right: 75px;
+        background-color: #343a40;
+        color: white;
+        padding: 8px 15px;
+        border-radius: 20px;
+        font-size: 14px;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        white-space: nowrap;
+    }
+    
+    .chat-bot-button:hover .chat-tooltip {
+        opacity: 1;
+    }
+	.hero-img {
+  		width: 100%;
+  		max-width: 700px; /* or any value suitable for your layout */
+  		height: auto;
+	}
+	
+	body {
+		background-color: #121212; /* dark background */
+		color: #ffffff;            /* white text */
+	}
+
+	/* Override light-colored sections if needed */
+	section, .container, .row {
+		background-color: transparent; /* don't override dark bg */
+	}
+
+	/* Headings */
+	h1, h2, h3, h4, h5, h6 {
+		color: #ffffff;
+	}
+
+	/* Paragraphs and links */
+	p, a {
+		color: #dddddd;
+	}
+
+	/* Buttons (if needed) */
+	.btn {
+		background-color: #333;
+		color: #fff;
+	}
+	.btn:hover {
+		background-color: #007bff; /* Bootstrap blue */
+		color: #fff; /* Ensure text stays visible */
+	}
+
+		</style>
+	</head>
+
+	<body>
+
+		<!-- Start Header/Navigation -->
+		<header>
+		<nav class="custom-navbar navbar navbar-expand-md navbar-dark bg-dark" aria-label="Furni navigation bar">
+
+			<div class="container">
+				<a class="navbar-brand" href="/">
+  					<i class="fas fa-laptop me-2"></i> Nextora<span></span>
+				</a>
+
+				<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsFurni" aria-controls="navbarsFurni" aria-expanded="false" aria-label="Toggle navigation">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+
+				<div class="collapse navbar-collapse" id="navbarsFurni">
+					<ul class="custom-navbar-nav navbar-nav ms-auto mb-2 mb-md-0">
+						<li class="nav-item active">
+							<a class="nav-link" href="/">Home</a>
+						</li>
+						<li><a class="nav-link" href="{% url 'allProducts' %}">Shop</a></li>
+						{% if request.session.user_id %}
+						<!-- User is logged in -->
+						<li class="nav-item dropdown">
+							<button class="btn nav-link dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+								<i class="fas fa-user"></i> My Account
+							</button>
+							<ul class="dropdown-menu dropdown-menu-end">
+								<li>
+									<a class="dropdown-item" href="{% url 'user_profile' request.session.user_id %}">
+										<i class="fas fa-user"></i> My Profile
+									</a>
+								</li>
+								<li>
+									<a class="dropdown-item" href="{% url 'my-cart' %}">
+										<i class="fas fa-shopping-cart"></i> My Cart
+									</a>
+								</li>
+								<li>
+									<a class="dropdown-item" href="{% url 'wishlist' %}">
+										<i class="fas fa-heart"></i> Wishlist
+									</a>
+								</li>
+								{% comment %} <li><hr class="dropdown-divider"></li> {% endcomment %}
+								<li>
+									<a class="dropdown-item" href="{% url 'my-orders' %}">
+										<i class="fas fa-shopping-bag"></i> My Order
+									</a> 
+								</li>
+								{% comment %} <li>
+									<a class="dropdown-item" href="{% url 'my_appointments' %}">
+										<i class="fas fa-calendar"></i> My Appointments
+									</a>
+								</li> {% endcomment %}
+								{% if request.session.role == 'specialist' %}
+								<li><hr class="dropdown-divider"></li>
+								<li>
+									<a class="dropdown-item" href="{% url 'specialist_dashboard' %}">
+										<i class="fas fa-clinic-medical"></i> Specialist Dashboard
+									</a>
+								</li>
+								{% elif request.session.role == 'seller' %}
+								<li><hr class="dropdown-divider"></li>
+								<li>
+									<a class="dropdown-item" href="{% url 'seller_dashboard' %}">
+										<i class="fas fa-store"></i> Seller Dashboard
+									</a>
+								</li>
+								{% elif request.session.role == 'admin' %}
+								<li><hr class="dropdown-divider"></li>
+								<li>
+									<a class="dropdown-item" href="{% url 'admin_dashboard' %}">
+										<i class="fas fa-user-shield"></i> Admin Dashboard
+									</a>
+								</li>
+								{% endif %}
+								<li><hr class="dropdown-divider"></li>
+								<li>
+									<a class="dropdown-item text-danger" href="{% url 'logout' %}">
+										<i class="fas fa-sign-out-alt"></i> Logout
+									</a>
+								</li>
+							</ul>
+						</li>
+						{% else %}
+						<!-- User is not logged in -->
+						<li><a class="nav-link" href="{% url 'login' %}"><i class="fas fa-sign-in-alt"></i> Login</a></li>
+						<li><a class="nav-link" href="{% url 'register' %}"><i class="fas fa-user-plus"></i> Register</a></li>
+						{% endif %}
+					</ul>
+					<!-- <form class="d-flex" role="search" action="{% url 'search' %}" method="get">
+						{% csrf_token %}
+						<input class="form-control me-2" type="search" placeholder="Search" name="q" aria-label="Search">
+						<button class="btn btn-outline-success" type="submit"><i class="fa-sharp fa-solid fa-magnifying-glass"></i></button>
+					</form> -->
+				</div>
+			</div>
+		</nav>
+		</header>
+		<!-- End Header/Navigation -->
+		{% for i in messages %}
+		<div class="alert alert-success" role="alert">
+			{{i}}
+		</div>
+		{% endfor %}
+		<!-- Start Hero Section -->
+		<div class="hero">
+			<div class="container">
+				<div class="row justify-content-between">
+					<div class="col-lg-5">
+						<div class="intro-excerpt">
+							<h1>Experience the Future with Our Next-Gen Laptops<span class="d-block"> Power Meets Precision</span></h1>
+							<p class="mb-4">Discover a new era of computing with our handpicked range of high-performance laptops. Crafted for creators, professionals, and tech enthusiasts, each device combines cutting-edge innovation, sleek design, and unmatched reliability. Whether you're working, gaming, or streaming — enjoy smooth, powerful performance wherever life takes you.</p>
+							<p><a href="#explore" class="btn btn-secondary me-2">Shop Now</a><a href="{% url 'allProducts' %}" class="btn btn-white-outline">Explore</a></p>
+						</div>
+					</div>
+					<div class="col-lg-7">
+						<div class="hero-img-wrap">
+							 <img src="{% static 'images/mac_laptop_main.jpg' %}" class="hero-img img-fluid" alt="Premium laptops">
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- End Hero Section -->
+
+		<!-- Start Product Section -->
+		<div class="product-section" id="explore">
+			<div class="container">
+				<div class="row">
+
+					<!-- Start Column 1 -->
+					<div class="col-md-12 col-lg-3 mb-5 mb-lg-0">
+						<h2 class="mb-4 section-title"> Discover Your Perfect Pair of Glasses.</h2>
+						<p class="mb-4"> From sleek and sophisticated frames to trendy and bold designs, finding your perfect pair of glasses has never been easier. Browse our curated collection and experience the joy of seeing clearly in style.</p>
+						<p><a href="{% url 'allProducts' %}" class="btn">Explore</a></p>
+					</div> 
+					<!-- End Column 1 -->
+					{% for product in P %}
+					<!-- Start Column 2 -->
+					<div class="col-12 col-md-4 col-lg-3 mb-5 mb-md-0" >
+						<a href="/view-product/{{product.p_id}}"><img src="{{product.p_image.url}}" style="min-height: 306px;" class="img-fluid product-thumbnail" alt="{{product.p_name}}">
+						<h5 class="product-title">{{product.p_name}}</h5></a>
+						<strong class="product-price">₹{{product.p_price}}</strong>
+						<span class="icon-cross">
+							<img src="{% static 'images/cross.svg' %}" class="img-fluid" alt="Cross icon">
+						</span>
+					</div> 
+					{% endfor %}
+					<!-- End Column 2 -->
+					<a href="{% url 'chatbot' %}" class="chat-bot-button">
+						<span class="chat-tooltip">Need help? Chat with us!</span>
+						<i class="fas fa-comment-dots chat-bot-icon"></i>
+					</a>
+
+				</div>
+			</div>
+		</div>
+		<!-- End Product Section -->
+
+		<!-- Start Footer Section -->
+		<footer class="footer-section">
+			<div class="container relative">
+				<div class="row g-5 mb-5">
+					<div class="col-lg-4">
+						<div class="mb-4 footer-logo-wrap"><a href="#" class="footer-logo">Nextora<span></span></a></div>
+						<p class="mb-4">Say goodbye to the hassle of traditional eyewear and hello to the freedom of contact lenses. Whether you're a daily wearer or occasional user, our contact lens options offer unparalleled comfort and clarity for all-day wear.</p>
+						<ul class="list-unstyled custom-social">
+							<li><a href="#"><span class="fa fa-brands fa-facebook-f"></span></a></li>
+							<li><a href="#"><span class="fa fa-brands fa-twitter"></span></a></li>
+							<li><a href="#"><span class="fa fa-brands fa-instagram"></span></a></li>
+							<li><a href="#"><span class="fa fa-brands fa-linkedin"></span></a></li>
+						</ul>
+					</div>
+
+					<div class="col-lg-8">
+						<div class="row links-wrap">
+							<div class="col-6 col-sm-6 col-md-3">
+								<ul class="list-unstyled">
+									<li><a href="#">About us</a></li>
+									<li><a href="#">Services</a></li>
+									<li><a href="#">Contact us</a></li>
+								</ul>
+							</div>
+
+							<div class="col-6 col-sm-6 col-md-3">
+								<ul class="list-unstyled">
+									<li><a href="#">Support</a></li>
+									<li><a href="#">Knowledge base</a></li>
+									<li><a href="#">Live chat</a></li>
+								</ul>
+							</div>
+
+							<div class="col-6 col-sm-6 col-md-3">
+								<ul class="list-unstyled">
+									<li><a href="#">Jobs</a></li>
+									<li><a href="#">Our team</a></li>
+									<li><a href="#">Leadership</a></li>
+								</ul>
+							</div>
+
+							<div class="col-6 col-sm-6 col-md-3">
+								<ul class="list-unstyled">
+								</ul>
+							</div>
+						</div>
+					</div>
+
+				</div>
+
+				<div class="border-top copyright">
+					<div class="row pt-4">
+						<div class="col-lg-6">
+							<p class="mb-2 text-center text-lg-start">Copyright &copy;<script>document.write(new Date().getFullYear());</script>. All Rights Reserved. &mdash;  <a href="https://untree.co"></a>  <a href="https://themewagon.com"></a></p>
+						</div>
+
+						<div class="col-lg-6 text-center text-lg-end">
+							<ul class="list-unstyled d-inline-flex ms-auto">
+								<li class="me-4"><a href="#">Terms &amp; Conditions</a></li>
+								<li><a href="#">Privacy Policy</a></li>
+							</ul>
+						</div>
+
+					</div>
+				</div>
+			</footer>
+			<!-- End Footer Section -->
+
+			<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+			<script src="{% static 'js/tiny-slider.js' %}"></script>
+			<script src="{% static 'js/custom.js' %}"></script>
+			<!-- Add Bootstrap Bundle with Popper -->
+			<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+	</body>
+</html>

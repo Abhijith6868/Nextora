@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add New Lens Product</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --primary-hover: #45a049;
+            --text-color: #333;
+            --border-color: #e0e0e0;
+            --background-color: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 15px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--text-color);
+            font-size: 2rem;
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            font-weight: 500;
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-color);
+            font-size: 0.95rem;
+        }
+
+        input[type="text"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        input[type="text"]:focus,
+        textarea:focus,
+        select:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .file-input-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .file-input-label {
+            display: inline-block;
+            padding: 12px 20px;
+            background-color: #f0f0f0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-input-label:hover {
+            background-color: #e0e0e0;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .image-preview {
+            margin-top: 20px;
+            text-align: center;
+            display: none;
+        }
+
+        .image-preview img {
+            max-width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .submit-btn {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1.1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .submit-btn:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.2);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 20px;
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.75rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                margin: 10px;
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            input[type="text"],
+            textarea,
+            select,
+            .submit-btn {
+                font-size: 1rem;
+                padding: 10px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Add New Lens Product</h1>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="pname">Product Name</label>
+                <input type="text" id="pname" name="pname" placeholder="Enter product name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="pdesc">Product Description</label>
+                <textarea id="pdesc" name="pdesc" placeholder="Enter detailed product description" required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="seller">Select Seller</label>
+                <select id="seller" name="seller" required>
+                    <option value="">Choose a seller</option>
+                    {% for seller in sell %}
+                        <option value="{{ seller.id }}">{{ seller.username }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="pprice">Price (₹)</label>
+                <input type="text" id="pprice" name="pprice" placeholder="Enter price" required>
+            </div>
+
+            <div class="form-group">
+                <label for="pquantity">Quantity</label>
+                <input type="text" id="pquantity" name="pquantity" placeholder="Enter available quantity" required>
+            </div>
+
+            <div class="form-group">
+                <label for="shape">Frame Shape</label>
+                <select id="shape" name="shape" required>
+                    <option value="">Select frame shape</option>
+                    {% for shape_value, shape_label in shapes %}
+                        <option value="{{ shape_value }}">{{ shape_label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="pcategory">Category</label>
+                <select id="pcategory" name="pcategory" required>
+                    <option value="">Select category</option>
+                    {% for category in cat %}
+                        <option value="{{ category.id }}">{{ category.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="file-input-label" for="imageUpload">
+                    <span>Choose Product Image</span>
+                </label>
+                <input type="file" id="imageUpload" name="pimage" accept="image/*" onchange="previewImage(event)" required>
+            </div>
+
+            <div class="image-preview">
+                <h3>Image Preview</h3>
+                <img id="preview" src="" alt="Image Preview">
+            </div>
+
+            <button type="submit" class="submit-btn">Add Product</button>
+        </form>
+    </div>
+
+    <script>
+        function previewImage(event) {
+            const preview = document.getElementById('preview');
+            const imagePreviewDiv = document.querySelector('.image-preview');
+            const file = event.target.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function() {
+                preview.src = reader.result;
+                imagePreviewDiv.style.display = 'block';
+            }
+
+            if (file) {
+                reader.readAsDataURL(file);
+            } else {
+                preview.src = '';
+                imagePreviewDiv.style.display = 'none';
+            }
+        }
+
+        // Add input validation
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const price = document.getElementById('pprice').value;
+            const quantity = document.getElementById('pquantity').value;
+
+            if (isNaN(price) || price <= 0) {
+                e.preventDefault();
+                alert('Please enter a valid price');
+                return;
+            }
+
+            if (isNaN(quantity) || quantity <= 0 || !Number.isInteger(Number(quantity))) {
+                e.preventDefault();
+                alert('Please enter a valid quantity (whole number)');
+                return;
+            }
+        });
+    </script>
+</body>
+</html>

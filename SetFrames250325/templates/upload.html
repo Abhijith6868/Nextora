@@ -1,0 +1,303 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Frame Advisor - Nextora</title>
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <style>
+        .upload-container {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+        .upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 1rem;
+        }
+        .upload-area:hover {
+            border-color: #007bff;
+            background-color: #f8f9fa;
+        }
+        .upload-icon {
+            font-size: 3rem;
+            color: #6c757d;
+            margin-bottom: 1rem;
+        }
+        .preview-image {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+        .product-card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+        }
+        .product-image {
+            height: 250px;
+            object-fit: cover;
+        }
+        .shape-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255,255,255,0.9);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+        .price-tag {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #28a745;
+        }
+        .loading-spinner {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+        .spinner-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-laptop me-2"></i>Nextora
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/"><i class="fas fa-home me-1"></i>Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'allProducts' %}"><i class="fas fa-store me-1"></i>Shop</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/suggest_eyewear/"><i class="fas fa-magic me-1"></i>Frame Advisor</a>
+                    </li>
+                    {% if request.session.user_id %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'my-cart' %}"><i class="fas fa-shopping-cart me-1"></i>Cart</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/logout/"><i class="fas fa-sign-out-alt me-1"></i>Logout</a>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="/login/"><i class="fas fa-sign-in-alt me-1"></i>Login</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="text-center mb-4">
+                    <h1 class="display-4">Virtual Frame Advisor</h1>
+                    <p class="lead text-muted">Upload your photo and let AI find your perfect frame match</p>
+                </div>
+
+                <div class="upload-container">
+                    <form method="post" enctype="multipart/form-data" id="uploadForm">
+                        {% csrf_token %}
+                        <div class="upload-area" id="dropZone" onclick="document.getElementById('id_image').click();">
+                            <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                            <h4>Drag & Drop or Click to Upload</h4>
+                            <p class="text-muted">Supported formats: JPG, PNG (Max size: 5MB)</p>
+                            <div id="preview"></div>
+                            <div style="display: none;">
+                                {{ form.image }}
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-lg px-5" id="submitBtn" disabled>
+                                <i class="fas fa-magic me-2"></i>Get Frame Recommendations
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                {% if error %}
+                <div class="alert alert-danger alert-dismissible fade show mt-4" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i>{{ error }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endif %}
+
+                {% if filtered_lenses %}
+                <div class="recommendations mt-5">
+                    <h2 class="mb-4">
+                        <i class="fas fa-star text-warning me-2"></i>
+                        Recommended Frames for You
+                    </h2>
+                    <div class="row">
+                        {% for lense in filtered_lenses %}
+                        <div class="col-md-6 col-lg-4">
+                            <div class="product-card">
+                                <div class="position-relative">
+                                    <img src="{{ lense.p_image.url }}" class="product-image w-100" alt="{{ lense.p_name }}">
+                                    <span class="shape-badge">
+                                        <i class="fas fa-glasses me-1"></i>{{ lense.get_shape_display }}
+                                    </span>
+                                </div>
+                                <div class="card-body">
+                                    <h5 class="card-title mb-3">{{ lense.p_name }}</h5>
+                                    <p class="card-text text-muted">{{ lense.p_desc|truncatechars:100 }}</p>
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <span class="price-tag">₹{{ lense.p_price }}</span>
+                                        <span class="badge {% if lense.p_quantity > 0 %}bg-success{% else %}bg-danger{% endif %}">
+                                            {% if lense.p_quantity > 0 %}In Stock{% else %}Out of Stock{% endif %}
+                                        </span>
+                                    </div>
+                                    <div class="d-grid gap-2">
+                                        <a href="/view-product/{{ lense.p_id }}" class="btn btn-outline-primary">
+                                            <i class="fas fa-eye me-1"></i>View Details
+                                        </a>
+                                        {% if lense.p_quantity > 0 %}
+                                        <a href="/add-to-cart/{{ lense.p_id }}" class="btn btn-primary">
+                                            <i class="fas fa-shopping-cart me-1"></i>Add to Cart
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div class="loading-spinner" id="loadingSpinner">
+        <div class="spinner-content">
+            <div class="spinner-border text-primary mb-3" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <h5>Analyzing Your Photo</h5>
+            <p class="text-muted mb-0">Finding the perfect frames for you...</p>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <script>
+        const dropZone = document.getElementById('dropZone');
+        const imageInput = document.getElementById('id_image');
+        const submitBtn = document.getElementById('submitBtn');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const preview = document.getElementById('preview');
+
+        // File Upload Preview
+        function handleFileSelect(file) {
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.innerHTML = `
+                        <img src="${e.target.result}" class="preview-image">
+                        <p class="text-success mt-2">
+                            <i class="fas fa-check-circle me-1"></i>Photo Selected
+                        </p>
+                    `;
+                    submitBtn.disabled = false;
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Handle file input change
+        imageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            handleFileSelect(file);
+        });
+
+        // Handle drag and drop
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight() {
+            dropZone.classList.add('border-primary');
+        }
+
+        function unhighlight() {
+            dropZone.classList.remove('border-primary');
+        }
+
+        dropZone.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const file = dt.files[0];
+            imageInput.files = dt.files;
+            handleFileSelect(file);
+        }
+
+        // Show loading spinner on form submit
+        document.getElementById('uploadForm').addEventListener('submit', function() {
+            loadingSpinner.style.display = 'flex';
+        });
+    </script>
+</body>
+</html>

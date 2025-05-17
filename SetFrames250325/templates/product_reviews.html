@@ -1,0 +1,288 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ product.p_name }} Reviews - Nextora</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #2557a7;
+            --secondary: #6c757d;
+            --success: #198754;
+            --info: #0dcaf0;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --surface: #ffffff;
+            --shadow: rgba(17, 12, 46, 0.15) 0px 48px 100px 0px;
+        }
+
+        body {
+            background: #f5f7fa;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            color: var(--dark);
+        }
+
+        .navbar {
+            background: var(--surface);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+            padding: 1rem 0;
+        }
+
+        .product-header {
+            background: linear-gradient(to right, #2557a7, #1a3f7d);
+            padding: 4rem 0;
+            margin-bottom: 2rem;
+        }
+
+        .product-header h1 {
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+
+        .stats-card {
+            background: var(--surface);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-item {
+            border-right: 1px solid rgba(0,0,0,0.1);
+            padding: 1rem;
+        }
+
+        .stat-item:last-child {
+            border-right: none;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin: 0.5rem 0;
+        }
+
+        .review-card {
+            background: var(--surface);
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(0,0,0,0.08);
+            transition: transform 0.2s ease;
+        }
+
+        .review-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .rating-stars {
+            color: #ffd700;
+        }
+
+        .sentiment-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-weight: 500;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .sentiment-positive { background: var(--success); }
+        .sentiment-neutral { background: var(--warning); }
+        .sentiment-negative { background: var(--danger); }
+
+        .chart-wrapper {
+            background: var(--surface);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .add-review-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 3.5rem;
+            height: 3.5rem;
+            border-radius: 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            box-shadow: 0 4px 12px rgba(37, 87, 167, 0.2);
+            transition: all 0.2s ease;
+        }
+
+        .add-review-btn:hover {
+            background: #1a3f7d;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(37, 87, 167, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .stat-item {
+                border-right: none;
+                border-bottom: 1px solid rgba(0,0,0,0.1);
+                padding: 1rem 0;
+            }
+            
+            .stat-item:last-child {
+                border-bottom: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/">
+                <i class="fas fa-chart-line me-2"></i>Nextora Analytics
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard">
+                            <i class="fas fa-tachometer-alt me-1"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/products">
+                            <i class="fas fa-box me-1"></i> Products
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="product-header text-white">
+        <div class="container">
+            <h1 class="display-5">{{ product.p_name }}</h1>
+            <p class="lead mb-0">Product Performance Analysis</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="stats-card">
+            <div class="row text-center">
+                <div class="col-md-4 stat-item">
+                    <div class="stat-label">Average Rating</div>
+                    <div class="stat-value">{{ avg_rating }}/5</div>
+                    <div class="rating-stars">
+                        {% for i in "12345"|make_list %}
+                            <i class="{% if forloop.counter <= avg_rating|floatformat:'0' %}fas{% else %}far{% endif %} fa-star"></i>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="col-md-4 stat-item">
+                    <div class="stat-label">Total Reviews</div>
+                    <div class="stat-value">{{ total_reviews }}</div>
+                    <small class="text-muted">All Time</small>
+                </div>
+                <div class="col-md-4 stat-item">
+                    <div class="stat-label">Positive Sentiment</div>
+                    <div class="stat-value">{{ sentiment_distribution.Positive }}%</div>
+                    <small class="text-muted">Customer Satisfaction</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="review-timeline">
+            {% for review in reviews %}
+            <div class="review-card">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <h5 class="mb-1">{{ review.user.username }}</h5>
+                        <div class="rating-stars">
+                            {% for i in "12345"|make_list %}
+                                {% if forloop.counter <= review.rating %}
+                                    <i class="fas fa-star"></i>
+                                {% else %}
+                                    <i class="far fa-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <span class="sentiment-badge sentiment-{{ review.sentiment|lower }} text-white">
+                        {{ review.sentiment }}
+                    </span>
+                </div>
+                <p class="mb-2">{{ review.comment }}</p>
+                <small class="text-muted">{{ review.created_at|date:"F d, Y" }}</small>
+            </div>
+            {% empty %}
+            <div class="glass-card text-center">
+                <i class="fas fa-comments fa-3x mb-3 text-muted"></i>
+                <h4>No Reviews Yet</h4>
+                <p class="text-muted">Be the first to review this product!</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <button class="add-review-btn" onclick="location.href='{% url 'add_review' order_id=1 product_id=product.p_id %}'">
+        <i class="fas fa-plus"></i>
+    </button>
+
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <script>
+        var ctx = document.getElementById('sentimentChart').getContext('2d');
+        var sentimentChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys({{ sentiment_distribution|safe }}),
+                datasets: [{
+                    data: Object.values({{ sentiment_distribution|safe }}),
+                    backgroundColor: [
+                        'rgba(0, 176, 155, 0.8)',
+                        'rgba(247, 183, 51, 0.8)',
+                        'rgba(235, 51, 73, 0.8)'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            font: { 
+                                size: 12,
+                                family: "'Segoe UI', system-ui, sans-serif"
+                            }
+                        }
+                    }
+                },
+                cutout: '75%',
+                animation: {
+                    animateScale: true,
+                    animateRotate: true
+                }
+            }
+        });
+    </script>
+</body>
+</html>

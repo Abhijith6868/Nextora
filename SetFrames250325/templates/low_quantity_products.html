@@ -1,0 +1,404 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Management - Nextora</title>
+    <!-- CSS -->
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        .content-wrapper {
+            padding: 2rem 0;
+        }
+        .page-header {
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header-title {
+            color: #2c3e50;
+            font-size: 1.75rem;
+            margin-bottom: 0.5rem;
+        }
+        .header-subtitle {
+            color: #6c757d;
+            font-size: 1rem;
+        }
+        .product-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+            height: 100%;
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+        }
+        .product-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-bottom: 1px solid #eee;
+        }
+        .product-details {
+            padding: 1.5rem;
+        }
+        .product-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+        .product-meta {
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        .quantity-badge {
+            display: inline-block;
+            padding: 0.35rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            background-color: #dc3545;
+            color: white;
+            margin-bottom: 1rem;
+        }
+        .success-badge {
+            background-color: #28a745;
+        }
+        .info-badge {
+            background-color: #17a2b8;
+        }
+        .warning-badge {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        .btn-order {
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 500;
+            width: 100%;
+        }
+        .price-tag {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+        .seller-info {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-bottom: 1rem;
+        }
+        .section-divider {
+            margin: 3rem 0 2rem;
+            border-top: 1px solid #dee2e6;
+            position: relative;
+        }
+        .section-title {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #f8f9fa;
+            padding: 0 15px;
+            font-size: 1.25rem;
+            color: #343a40;
+        }
+        .nav-tabs .nav-link {
+            border-radius: 0;
+            font-weight: 500;
+        }
+        .nav-tabs .nav-link.active {
+            border-bottom: 3px solid #007bff;
+            color: #007bff;
+        }
+        .metric-value {
+            font-weight: 700;
+            color: #343a40;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-laptop me-2"></i>Nextora
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarMain">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/"><i class="fas fa-home me-1"></i>Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'product_list' %}"><i class="fas fa-store me-1"></i>Products</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#"><i class="fas fa-chart-line me-1"></i>Inventory Analytics</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="content-wrapper">
+        <div class="container">
+            <!-- Low Stock Section -->
+            <div class="page-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="header-title">
+                            <i class="fas fa-exclamation-triangle text-warning me-2"></i>Low Stock Alert
+                        </h1>
+                        <p class="header-subtitle">{{ low_quantity_count }} products that need to be restocked</p>
+                    </div>
+                    <div>
+                        <button class="btn btn-primary" onclick="window.print()">
+                            <i class="fas fa-print me-2"></i>Print Report
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                {% for lens in low_quantity_lenses %}
+                    <div class="col-md-6 col-lg-4">
+                        <div class="product-card">
+                            <img src="{{ lens.p_image.url }}" alt="{{ lens.p_name }}" class="product-image">
+                            <div class="product-details">
+                                <h2 class="product-name">{{ lens.p_name }}</h2>
+                                
+                                <span class="quantity-badge">
+                                    <i class="fas fa-boxes me-1"></i>Only {{ lens.p_quantity }} left
+                                </span>
+                                
+                                <div class="price-tag">
+                                    <i class="fas fa-rupee-sign me-1"></i>{{ lens.p_price }}
+                                </div>
+                                
+                                <div class="seller-info">
+                                    <i class="fas fa-store me-1"></i>Seller: {{ lens.seller }}
+                                </div>
+                                
+                                <a href="{% url 'order_more' lens_id=lens.pk %}" class="btn btn-primary btn-order">
+                                    <i class="fas fa-shopping-cart me-2"></i>Order More
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="col-12">
+                        <div class="alert alert-success" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>All products are well stocked!
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- Top Selling Products Section -->
+            <div class="section-divider">
+                <h2 class="section-title"><i class="fas fa-chart-line me-2"></i>Sales Analytics</h2>
+            </div>
+
+            <ul class="nav nav-tabs mb-4" id="salesTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="bestsellers-tab" data-bs-toggle="tab" data-bs-target="#bestsellers" type="button" role="tab">
+                        <i class="fas fa-award me-1"></i>Best Sellers
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="revenue-tab" data-bs-toggle="tab" data-bs-target="#revenue" type="button" role="tab">
+                        <i class="fas fa-rupee-sign me-1"></i>Top Revenue
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="trending-tab" data-bs-toggle="tab" data-bs-target="#trending" type="button" role="tab">
+                        <i class="fas fa-fire me-1"></i>Trending (30 Days)
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="salesTabContent">
+                <!-- Best Sellers Tab -->
+                <div class="tab-pane fade show active" id="bestsellers" role="tabpanel" aria-labelledby="bestsellers-tab">
+                    <div class="row">
+                        {% for product in top_selling_products %}
+                            <div class="col-md-6 col-lg-4">
+                                <div class="product-card">
+                                    <img src="{{ product.p_image.url }}" alt="{{ product.p_name }}" class="product-image">
+                                    <div class="product-details">
+                                        <h2 class="product-name">{{ product.p_name }}</h2>
+                                        
+                                        <span class="quantity-badge success-badge">
+                                            <i class="fas fa-shopping-cart me-1"></i>Sold: <span class="metric-value">{{ product.total_ordered }}</span> units
+                                        </span>
+                                        
+                                        <div class="price-tag">
+                                            <i class="fas fa-rupee-sign me-1"></i>{{ product.p_price }}
+                                        </div>
+                                        
+                                        <div class="seller-info">
+                                            <i class="fas fa-store me-1"></i>Seller: {{ product.seller }}
+                                        </div>
+                                        
+                                        <a href="/view-product/{{ product.p_id }}" class="btn btn-outline-primary btn-order">
+                                            <i class="fas fa-eye me-2"></i>View Product
+                                        </a>
+                                        <a href="{% url 'order_more' lens_id=product.p_id %}" class="btn btn-success btn-order mt-2">
+                                            <i class="fas fa-shopping-cart me-2"></i>Order More
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% empty %}
+                            <div class="col-12">
+                                <div class="alert alert-info" role="alert">
+                                    <i class="fas fa-info-circle me-2"></i>No sales data available yet.
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Top Revenue Tab -->
+                <div class="tab-pane fade" id="revenue" role="tabpanel" aria-labelledby="revenue-tab">
+                    <div class="row">
+                        {% for product in top_revenue_products %}
+                            <div class="col-md-6 col-lg-4">
+                                <div class="product-card">
+                                    <img src="{{ product.p_image.url }}" alt="{{ product.p_name }}" class="product-image">
+                                    <div class="product-details">
+                                        <h2 class="product-name">{{ product.p_name }}</h2>
+                                        
+                                        <span class="quantity-badge info-badge">
+                                            <i class="fas fa-rupee-sign me-1"></i>Revenue: <span class="metric-value">₹{{ product.total_revenue }}</span>
+                                        </span>
+                                        
+                                        <div class="price-tag">
+                                            <i class="fas fa-rupee-sign me-1"></i>{{ product.p_price }}
+                                        </div>
+                                        
+                                        <div class="seller-info">
+                                            <i class="fas fa-store me-1"></i>Seller: {{ product.seller }}
+                                        </div>
+                                        
+                                        <a href="/view-product/{{ product.p_id }}" class="btn btn-outline-primary btn-order">
+                                            <i class="fas fa-eye me-2"></i>View Product
+                                        </a>
+                                        <a href="{% url 'order_more' lens_id=product.p_id %}" class="btn btn-success btn-order mt-2">
+                                            <i class="fas fa-shopping-cart me-2"></i>Order More
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% empty %}
+                            <div class="col-12">
+                                <div class="alert alert-info" role="alert">
+                                    <i class="fas fa-info-circle me-2"></i>No revenue data available yet.
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Trending Tab -->
+                <div class="tab-pane fade" id="trending" role="tabpanel" aria-labelledby="trending-tab">
+                    <div class="row">
+                        {% for product in recent_popular_products %}
+                            <div class="col-md-6 col-lg-4">
+                                <div class="product-card">
+                                    <img src="{{ product.p_image.url }}" alt="{{ product.p_name }}" class="product-image">
+                                    <div class="product-details">
+                                        <h2 class="product-name">{{ product.p_name }}</h2>
+                                        
+                                        <span class="quantity-badge warning-badge">
+                                            <i class="fas fa-fire me-1"></i>Recent Orders: <span class="metric-value">{{ product.recent_orders }}</span>
+                                        </span>
+                                        
+                                        <div class="price-tag">
+                                            <i class="fas fa-rupee-sign me-1"></i>{{ product.p_price }}
+                                        </div>
+                                        
+                                        <div class="seller-info">
+                                            <i class="fas fa-store me-1"></i>Seller: {{ product.seller }}
+                                        </div>
+                                        
+                                        <a href="/view-product/{{ product.p_id }}" class="btn btn-outline-primary btn-order">
+                                            <i class="fas fa-eye me-2"></i>View Product
+                                        </a>
+                                        <a href="{% url 'order_more' lens_id=product.p_id %}" class="btn btn-success btn-order mt-2">
+                                            <i class="fas fa-shopping-cart me-2"></i>Order More
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% empty %}
+                            <div class="col-12">
+                                <div class="alert alert-info" role="alert">
+                                    <i class="fas fa-info-circle me-2"></i>No recent trend data available.
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <!-- Add this at the end of your file, just before the closing </body> tag -->
+<script>
+    // Wait for document to be fully loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        // Find all tab elements
+        var tabElems = document.querySelectorAll('#salesTabs button');
+        
+        // Add click event listeners to each tab
+        tabElems.forEach(function(tabElem) {
+            tabElem.addEventListener('click', function(event) {
+                event.preventDefault();
+                
+                // Remove active class from all tabs and panes
+                document.querySelectorAll('#salesTabs .nav-link').forEach(function(tab) {
+                    tab.classList.remove('active');
+                });
+                document.querySelectorAll('.tab-pane').forEach(function(pane) {
+                    pane.classList.remove('show', 'active');
+                });
+                
+                // Add active class to clicked tab
+                this.classList.add('active');
+                
+                // Get the target tab content and activate it
+                var target = this.getAttribute('data-bs-target');
+                document.querySelector(target).classList.add('show', 'active');
+            });
+        });
+    });
+</script>
+<!-- Make sure this path is correct -->
+<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+<!-- Replace your bootstrap JS with this in the head section -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+</body>
+</html>

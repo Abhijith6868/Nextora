@@ -1,0 +1,668 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Analytics | Nextora</title>
+    <!-- Bootstrap CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f8f9fa;
+            padding-top: 20px;
+        }
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            border: none;
+        }
+        .card-header {
+            background-color: #fff;
+            border-bottom: 1px solid rgba(0,0,0,0.125);
+            font-weight: 500;
+        }
+        .stats-card {
+            text-align: center;
+            padding: 20px;
+            transition: transform 0.3s;
+        }
+        .stats-card:hover {
+            transform: translateY(-5px);
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: 500;
+            color: #2196F3;
+        }
+        
+        /* Enhanced revenue styling */
+        .total-revenue {
+            font-weight: 700;
+            color: #28a745;
+        }
+        
+        .revenue-change {
+            font-size: 12px;
+            color: #28a745;
+            margin-left: 5px;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #6c757d;
+        }
+        .table th {
+            font-weight: 500;
+            background-color: #f8f9fa;
+            color: #495057;
+        }
+        .sort-icon {
+            margin-left: 5px;
+            color: #adb5bd;
+        }
+        .sort-active {
+            color: #2196F3;
+        }
+        .search-input {
+            border-radius: 20px;
+            padding-left: 15px;
+        }
+        .badge-products {
+            background-color: #e3f2fd;
+            color: #0d6efd;
+            font-weight: normal;
+            padding: 6px 10px;
+            margin: 2px;
+            display: inline-block;
+        }
+        .badge-count {
+            background-color: #0d6efd;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 10px;
+            margin-left: 5px;
+        }
+        .customer-row {
+            cursor: pointer;
+        }
+        .customer-row:hover {
+            background-color: #f5f9ff;
+        }
+        
+        /* Styles for expanded customer details */
+        .customer-details-row {
+            background-color: #f8f9fa;
+        }
+        
+        .customer-details {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin: 0 20px 10px;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .customer-details h5 {
+            color: #495057;
+            font-weight: 500;
+        }
+        
+        .customer-details h6 {
+            color: #6c757d;
+            font-weight: 500;
+        }
+        
+        .product-list, .order-list {
+            min-height: 100px;
+        }
+        
+        /* Badge styles for products in detailed view */
+        .detail-badge-products {
+            background-color: #e3f2fd;
+            color: #0d6efd;
+            font-weight: normal;
+            padding: 6px 10px;
+            margin: 2px;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        /* Status indicators */
+        .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        
+        .status-active {
+            background-color: #28a745;
+        }
+        
+        .status-inactive {
+            background-color: #6c757d;
+        }
+        
+        .status-deleted {
+            background-color: #dc3545;
+        }
+        
+        /* Enhanced status badges */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .status-badge-active {
+            background-color: rgba(40, 167, 69, 0.1);
+            color: #28a745;
+            border: 1px solid rgba(40, 167, 69, 0.2);
+        }
+        
+        .status-badge-inactive {
+            background-color: rgba(108, 117, 125, 0.1);
+            color: #6c757d;
+            border: 1px solid rgba(108, 117, 125, 0.2);
+        }
+        
+        .status-badge-deleted {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+            border: 1px solid rgba(220, 53, 69, 0.2);
+        }
+        
+        /* Order item styling */
+        .order-item {
+            border-left: 3px solid transparent;
+            padding-left: 10px;
+            margin-bottom: 15px;
+            transition: all 0.2s;
+        }
+        
+        .order-completed {
+            border-left-color: #28a745;
+        }
+        
+        .order-processing {
+            border-left-color: #ffc107;
+        }
+        
+        .order-cancelled {
+            border-left-color: #dc3545;
+        }
+        
+        .order-ontheway {
+            border-left-color: #17a2b8;
+        }
+        
+        .order-received {
+            border-left-color: #6c757d;
+        }
+        
+        .spinner-sm {
+            width: 1rem;
+            height: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mb-4 text-center">Customer Analytics Dashboard</h1>
+        
+        <!-- Stats Dashboard -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card stats-card">
+                    <div class="stat-value">{{ metrics.total_customers }}</div>
+                    <div class="stat-label">Total Customers</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stats-card">
+                    <div class="stat-value">{{ metrics.active_customers }}</div>
+                    <div class="stat-label">Active Customers</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stats-card">
+                    <div class="stat-value total-revenue">₹{{ metrics.total_revenue|floatformat:2 }}</div>
+                    <div class="stat-label">Total Revenue <span class="revenue-change">(Completed Orders)</span></div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stats-card">
+                    <div class="stat-value">₹{{ metrics.avg_customer_value|floatformat:2 }}</div>
+                    <div class="stat-label">Avg. Customer Value</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Card -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Customer List</h5>
+                <div class="input-group" style="max-width: 300px;">
+                    <span class="input-group-text bg-white border-end-0">
+                        <i class="fas fa-search text-muted"></i>
+                    </span>
+                    <input type="text" id="searchInput" class="form-control search-input border-start-0" placeholder="Search customers...">
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>
+                                    <a href="?sort=first_name&order={% if sort_by == 'first_name' and order == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+                                        Customer
+                                        <i class="fas fa-sort{% if sort_by == 'first_name' %}-{% if order == 'asc' %}up{% else %}down{% endif %} sort-active{% endif %} sort-icon"></i>
+                                    </a>
+                                </th>
+                                <th>Contact</th>
+                                <!-- New Status Column -->
+                                <th>Status</th>
+                                <th>
+                                    <a href="?sort=total_orders&order={% if sort_by == 'total_orders' and order == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+                                        Orders
+                                        <i class="fas fa-sort{% if sort_by == 'total_orders' %}-{% if order == 'asc' %}up{% else %}down{% endif %} sort-active{% endif %} sort-icon"></i>
+                                    </a>
+                                </th>
+                                <th>
+                                    <a href="?sort=total_spent&order={% if sort_by == 'total_spent' and order == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+                                        Total Spent
+                                        <i class="fas fa-sort{% if sort_by == 'total_spent' %}-{% if order == 'asc' %}up{% else %}down{% endif %} sort-active{% endif %} sort-icon"></i>
+                                    </a>
+                                </th>
+                                <th>
+                                    <a href="?sort=avg_order_value&order={% if sort_by == 'avg_order_value' and order == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+                                        Avg. Order
+                                        <i class="fas fa-sort{% if sort_by == 'avg_order_value' %}-{% if order == 'asc' %}up{% else %}down{% endif %} sort-active{% endif %} sort-icon"></i>
+                                    </a>
+                                </th>
+                                <th>
+                                    <a href="?sort=last_order_date&order={% if sort_by == 'last_order_date' and order == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+                                        Last Order
+                                        <i class="fas fa-sort{% if sort_by == 'last_order_date' %}-{% if order == 'asc' %}up{% else %}down{% endif %} sort-active{% endif %} sort-icon"></i>
+                                    </a>
+                                </th>
+                                <th>Top Products</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if users %}
+                                {% for user in users %}
+                                <tr class="customer-row" data-user-id="{{ user.id }}">
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar bg-light-primary me-2 rounded-circle text-center" style="width: 32px; height: 32px; line-height: 32px; 
+                                                background-color: {% if user.first_name == 'Deleted' %}#f8d7da{% else %}#e3f2fd{% endif %};">
+                                                {{ user.first_name|slice:":1" }}{{ user.last_name|slice:":1" }}
+                                            </div>
+                                            <div>
+                                                <strong>{{ user.first_name }} {{ user.last_name }}</strong>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div><i class="fas fa-envelope text-muted me-1"></i> {{ user.email }}</div>
+                                        <div><i class="fas fa-phone text-muted me-1"></i> {{ user.mobile_phone }}</div>
+                                    </td>
+                                    <!-- New Status Column Content -->
+                                    <td>
+                                        {% if user.first_name == 'Deleted' %}
+                                            <span class="status-badge status-badge-deleted">
+                                                <i class="fas fa-ban me-1"></i> Deleted
+                                            </span>
+                                        {% elif user.total_orders > 0 %}
+                                            <span class="status-badge status-badge-active">
+                                                <i class="fas fa-check-circle me-1"></i> Active
+                                            </span>
+                                        {% else %}
+                                            <span class="status-badge status-badge-inactive">
+                                                <i class="fas fa-user-clock me-1"></i> Inactive
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ user.total_orders }}</td>
+                                    <td>₹{{ user.total_spent|floatformat:2 }}</td>
+                                    <td>₹{{ user.avg_order_value|floatformat:2 }}</td>
+                                    <td>
+                                        {% if user.last_order_date %}
+                                            {{ user.last_order_date|date:"M d, Y" }}
+                                        {% else %}
+                                            <span class="text-muted">Never</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if user.top_products %}
+                                            {% for product in user.top_products %}
+                                                <span class="badge badge-products">
+                                                    {{ product.name }}
+                                                    <span class="badge-count">{{ product.quantity }}</span>
+                                                </span>
+                                            {% endfor %}
+                                        {% else %}
+                                            <span class="text-muted">No purchases</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="8" class="text-center py-4">
+                                        <i class="fas fa-users text-muted mb-2" style="font-size: 24px;"></i>
+                                        <p class="mb-0">No customers found</p>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Enhanced search functionality
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const searchText = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('tbody tr.customer-row');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchText) ? '' : 'none';
+            });
+        });
+
+        // Expanded row click functionality to show more details
+        document.querySelectorAll('.customer-row').forEach(row => {
+            row.addEventListener('click', function() {
+                const userId = this.dataset.userId;
+                
+                // Toggle existing expanded row if any
+                const existingExpanded = document.querySelector('.customer-details-row');
+                if (existingExpanded) {
+                    existingExpanded.remove();
+                }
+                
+                // If clicking the same row that was already expanded, just close it
+                if (existingExpanded && existingExpanded.dataset.parentId === userId) {
+                    return;
+                }
+                
+                // Create new expanded row with user details
+                const detailsRow = document.createElement('tr');
+                detailsRow.className = 'customer-details-row';
+                detailsRow.dataset.parentId = userId;
+                
+                // Create a cell that spans all columns
+                const detailsCell = document.createElement('td');
+                detailsCell.colSpan = 8; // Adjusted for the new status column
+                
+                // Get user data from the row
+                const nameElement = this.querySelector('strong');
+                const userName = nameElement ? nameElement.textContent : 'Unknown';
+                
+                // Check user status - Now from the dedicated status column
+                const statusColumn = this.querySelector('td:nth-child(3)');
+                const statusBadge = statusColumn ? statusColumn.querySelector('.status-badge') : null;
+                const isDeleted = statusBadge && statusBadge.classList.contains('status-badge-deleted');
+                const isActive = statusBadge && statusBadge.classList.contains('status-badge-active');
+                const statusText = isDeleted ? 'Deleted' : (isActive ? 'Active' : 'Inactive');
+                const statusClass = isDeleted ? 'bg-danger' : (isActive ? 'bg-success' : 'bg-secondary');
+                
+                // Get contact info
+                const contactCells = this.querySelectorAll('td');
+                const emailElement = contactCells[1].querySelector('div:nth-of-type(1)');
+                const phoneElement = contactCells[1].querySelector('div:nth-of-type(2)');
+                const userEmail = emailElement ? emailElement.textContent.replace(/[^0-9a-zA-Z@.]/g, '').trim() : 'No email';
+                const userPhone = phoneElement ? phoneElement.textContent.replace(/[^0-9+]/g, '').trim() : 'No phone';
+                
+                // Get order info - Adjusted indices for new status column
+                const totalSpent = contactCells[4] ? contactCells[4].textContent : '₹0.00';
+                const avgOrder = contactCells[5] ? contactCells[5].textContent : '₹0.00';
+                const lastOrder = contactCells[6] ? contactCells[6].textContent.trim() : 'Never';
+                
+                // Build the detailed view HTML
+                let detailsHTML = `
+                    <div class="customer-details p-3 mb-3">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="mb-3">${userName} - Detailed Profile</h5>
+                                <p><i class="fas fa-envelope text-primary me-2"></i> ${userEmail}</p>
+                                <p><i class="fas fa-phone text-primary me-2"></i> ${userPhone}</p>
+                                <p><i class="fas fa-shopping-cart text-primary me-2"></i> Total spent: ${totalSpent}</p>
+                                <p><i class="fas fa-chart-line text-primary me-2"></i> Average order: ${avgOrder}</p>
+                                <p><i class="fas fa-calendar text-primary me-2"></i> Last activity: ${lastOrder}</p>
+                                <p><i class="fas fa-user-circle text-primary me-2"></i> Status: 
+                                    <span class="badge ${statusClass}">
+                                        ${statusText}
+                                    </span>
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="mb-3">Purchase Analytics</h5>
+                                <div class="d-flex flex-column">
+                                    <div class="mb-3">
+                                        <h6>Top Purchased Products</h6>
+                                        <div id="topProducts${userId}" class="product-list">
+                                            <div class="spinner-border text-primary spinner-sm mb-2" role="status">
+                                                <span class="visually-hidden">Loading...</span>
+                                            </div>
+                                            <p class="text-muted">Loading products...</p>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <h6>Recent Orders</h6>
+                                        <div id="recentOrders${userId}" class="order-list">
+                                            <div class="spinner-border text-primary spinner-sm mb-2" role="status">
+                                                <span class="visually-hidden">Loading...</span>
+                                            </div>
+                                            <p class="text-muted">Loading orders...</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-12 text-end">
+                                <button class="btn btn-sm btn-outline-primary view-orders-btn" data-user-id="${userId}">
+                                    <i class="fas fa-list me-1"></i> View All Orders
+                                </button>
+                                <button class="btn btn-sm btn-outline-info send-email-btn" data-user-id="${userId}" data-user-email="${userEmail}">
+                                    <i class="fas fa-envelope me-1"></i> Contact Customer
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary close-details-btn">
+                                    <i class="fas fa-times me-1"></i> Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                detailsCell.innerHTML = detailsHTML;
+                detailsRow.appendChild(detailsCell);
+                
+                // Insert the details row after the clicked row
+                this.parentNode.insertBefore(detailsRow, this.nextSibling);
+                
+                // Handle close button
+                detailsRow.querySelector('.close-details-btn').addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    detailsRow.remove();
+                });
+                
+                // Handle view orders button
+                detailsRow.querySelector('.view-orders-btn').addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    // Navigate to orders page filtered for this user
+                    window.location.href = `/orders/?customer=${userId}`;
+                });
+                
+                // Handle send email button
+                detailsRow.querySelector('.send-email-btn').addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const email = this.dataset.userEmail;
+                    window.location.href = `mailto:${email}?subject=Nextora%20Customer%20Support`;
+                });
+                
+                // Display top products from the row data - Adjusted for new column indices
+                const topProductsContainer = document.getElementById(`topProducts${userId}`);
+                const currentRowProducts = this.querySelector('td:nth-child(8)'); // Adjusted for status column
+                
+                if (currentRowProducts) {
+                    const productText = currentRowProducts.textContent.trim();
+                    if (productText === 'No purchases') {
+                        topProductsContainer.innerHTML = `<p class="text-muted">No purchase history available</p>`;
+                    } else {
+                        // Get all product badges
+                        const badges = currentRowProducts.querySelectorAll('.badge-products');
+                        if (badges && badges.length > 0) {
+                            let productsHTML = '';
+                            badges.forEach(badge => {
+                                // More reliable extraction of product name and quantity
+                                const badgeText = badge.textContent.trim();
+                                const matches = badgeText.match(/(.+?)(\d+)$/);
+                                
+                                if (matches && matches.length >= 3) {
+                                    const productName = matches[1].trim();
+                                    const quantity = matches[2].trim();
+                                    
+                                    productsHTML += `
+                                        <div class="d-flex align-items-center mb-2">
+                                            <span class="detail-badge-products me-2">
+                                                ${productName}
+                                                <span class="badge-count">${quantity}</span>
+                                            </span>
+                                            <small class="text-muted">Recent purchase</small>
+                                        </div>
+                                    `;
+                                }
+                            });
+                            
+                            if (productsHTML) {
+                                topProductsContainer.innerHTML = productsHTML;
+                            } else {
+                                topProductsContainer.innerHTML = `<p class="text-muted">No purchase history available</p>`;
+                            }
+                        } else {
+                            topProductsContainer.innerHTML = `<p class="text-muted">No purchase history available</p>`;
+                        }
+                    }
+                } else {
+                    topProductsContainer.innerHTML = `<p class="text-muted">No purchase history available</p>`;
+                }
+                
+                // Display recent orders based on current row data
+                const recentOrdersContainer = document.getElementById(`recentOrders${userId}`);
+                const orderCount = this.querySelector('td:nth-child(4)').textContent.trim(); // Adjusted for status column
+                
+                // Show basic order info from the row data
+                if (orderCount && parseInt(orderCount) > 0) {
+                    recentOrdersContainer.innerHTML = `
+                        <div class="order-item order-completed mb-3">
+                            <div class="d-flex justify-content-between">
+                                <span><strong>Most Recent Order</strong></span>
+                                <span class="badge bg-success">Completed</span>
+                            </div>
+                            <small class="text-muted d-block">${lastOrder} · ${totalSpent}</small>
+                            <div class="small text-muted mt-1">Total orders: ${orderCount}</div>
+                        </div>
+                        <div class="alert alert-info mt-3 mb-0 p-2" style="font-size: 0.8rem;">
+                            <i class="fas fa-info-circle me-1"></i> View all orders for detailed history
+                        </div>
+                    `;
+                    
+                    // Try to load more detailed order data via AJAX
+                    fetch(`/get_user_orders/?user_id=${userId}`)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok');
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (data.orders && data.orders.length > 0) {
+                                let ordersHTML = '';
+                                data.orders.forEach(order => {
+                                    // Format the order date
+                                    const orderDate = new Date(order.created_at);
+                                    const formattedDate = orderDate.toLocaleDateString('en-IN');
+                                    
+                                    // Determine badge class and order style class based on status
+                                    let statusClass = 'bg-secondary';
+                                    let orderClass = 'order-received';
+                                    
+                                    if (order.order_status === 'order completed') {
+                                        statusClass = 'bg-success';
+                                        orderClass = 'order-completed';
+                                    } else if (order.order_status === 'order cancelled') {
+                                        statusClass = 'bg-danger';
+                                        orderClass = 'order-cancelled';
+                                    } else if (order.order_status === 'order processing') {
+                                        statusClass = 'bg-warning text-dark';
+                                        orderClass = 'order-processing';
+                                    } else if (order.order_status === 'order on the way') {
+                                        statusClass = 'bg-info';
+                                        orderClass = 'order-ontheway';
+                                    }
+                                    
+                                    // Format the status text to be more readable
+                                    const statusText = order.order_status.replace('order ', '').charAt(0).toUpperCase() + 
+                                                     order.order_status.replace('order ', '').slice(1);
+                                    
+                                    // Add product count if available
+                                    const productInfo = order.products_count ? 
+                                        `<div class="small text-muted mt-1">${order.products_count} product${order.products_count > 1 ? 's' : ''}</div>` : '';
+                                    
+                                    ordersHTML += `
+                                        <div class="order-item ${orderClass} mb-3">
+                                            <div class="d-flex justify-content-between">
+                                                <span><strong>Order #${order.id}</strong></span>
+                                                <span class="badge ${statusClass}">${statusText}</span>
+                                            </div>
+                                            <small class="text-muted d-block">${formattedDate} · ₹${order.total.toFixed(2)}</small>
+                                            ${productInfo}
+                                        </div>
+                                    `;
+                                });
+                                
+                                if (ordersHTML) {
+                                    recentOrdersContainer.innerHTML = ordersHTML;
+                                }
+                            }
+                        })
+                        .catch(error => {
+                            console.log('AJAX request failed:', error);
+                            // Already showing fallback data, so we don't need to do anything
+                        });
+                } else {
+                    recentOrdersContainer.innerHTML = `<p class="text-muted">No orders placed yet</p>`;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

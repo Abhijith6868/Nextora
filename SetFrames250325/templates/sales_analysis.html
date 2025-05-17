@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nextora - Sales Analytics</title>
+    
+    <!-- Bootstrap CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Flatpickr for date picker -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --accent-color: #e74c3c;
+            --light-bg: #f8f9fa;
+            --dark-bg: #343a40;
+            --text-color: #333;
+            --light-text: #f8f9fa;
+        }
+        
+        body {
+            font-family: 'Roboto', 'Segoe UI', sans-serif;
+            background-color: var(--light-bg);
+            color: var(--text-color);
+        }
+        
+        .dashboard-header {
+            background-color: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .stats-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.25rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            height: 100%;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+        
+        .card-title {
+            color: var(--secondary-color);
+            font-weight: 600;
+        }
+        
+        .card-change {
+            font-size: 0.9rem;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            margin-bottom: 1.5rem;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chart-title {
+            margin-bottom: 1rem;
+            font-weight: 600;
+            color: var(--secondary-color);
+        }
+        
+        .chart-wrapper {
+            position: relative;
+            margin: auto;
+            height: 50vh;
+            max-height: 400px;
+            width: 100%;
+        }
+        
+        .table-container {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            margin-bottom: 1.5rem;
+        }
+        
+        .filter-bar {
+            background: white;
+            border-radius: 10px;
+            padding: 1rem 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            margin-bottom: 1.5rem;
+        }
+        
+        .filter-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .filter-form > div {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .btn-apply {
+            background-color: var(--primary-color);
+            border: none;
+            border-radius: 8px;
+            padding: 0.5rem 1.5rem;
+            color: white;
+            font-weight: 500;
+        }
+        
+        .btn-apply:hover {
+            background-color: #2980b9;
+        }
+        
+        .positive-change {
+            color: #28a745;
+        }
+        
+        .negative-change {
+            color: #dc3545;
+        }
+        
+        .table {
+            width: 100%;
+            margin-bottom: 0;
+        }
+        
+        .table th {
+            border-top: none;
+            color: var(--secondary-color);
+        }
+        
+        .progress {
+            height: 8px;
+            margin-top: 5px;
+        }
+        
+        .icon-bg {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+        }
+        
+        .bg-primary-light {
+            background-color: rgba(52, 152, 219, 0.1);
+            color: var(--primary-color);
+        }
+        
+        .bg-success-light {
+            background-color: rgba(40, 167, 69, 0.1);
+            color: #28a745;
+        }
+        
+        .bg-warning-light {
+            background-color: rgba(255, 193, 7, 0.1);
+            color: #ffc107;
+        }
+        
+        @media (max-width: 992px) {
+            .chart-wrapper {
+                height: 40vh;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .filter-form {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .filter-form > div {
+                width: 100%;
+            }
+            
+            .chart-wrapper {
+                height: 50vh;
+            }
+            
+            .stats-card {
+                margin-bottom: 1rem;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .dashboard-header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .card-value {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid py-4">
+        <div class="dashboard-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="mb-0">Sales Analytics Dashboard</h1>
+            </div>
+        </div>
+        
+        <div class="filter-bar">
+            <form method="get" class="filter-form">
+                <div>
+                    <label for="start_date" class="form-label">Start Date</label>
+                    <input type="date" class="form-control datepicker" id="start_date" name="start_date" value="{{ start_date }}">
+                </div>
+                <div>
+                    <label for="end_date" class="form-label">End Date</label>
+                    <input type="date" class="form-control datepicker" id="end_date" name="end_date" value="{{ end_date }}">
+                </div>
+                <div>
+                    <label for="period" class="form-label">Time Period</label>
+                    <select class="form-select" id="period" name="period">
+                        <option value="daily" {% if period == 'daily' %}selected{% endif %}>Daily</option>
+                        <option value="weekly" {% if period == 'weekly' %}selected{% endif %}>Weekly</option>
+                        <option value="monthly" {% if period == 'monthly' %}selected{% endif %}>Monthly</option>
+                        <option value="yearly" {% if period == 'yearly' %}selected{% endif %}>Yearly</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="category" class="form-label">Category</label>
+                    <select class="form-select" id="category" name="category">
+                        <option value="">All Categories</option>
+                        {% for category in categories %}
+                        <option value="{{ category.id }}" {% if category.id|stringformat:"s" == category_id %}selected{% endif %}>{{ category.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="d-flex align-items-end">
+                    <button type="submit" class="btn btn-apply">Apply Filters</button>
+                </div>
+            </form>
+        </div>
+        
+        <div class="row mb-4">
+            <div class="col-md-4 mb-4">
+                <div class="stats-card">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-bg bg-primary-light">
+                            <i class="fas fa-rupee-sign fa-lg"></i>
+                        </div>
+                        <div>
+                            <h6 class="card-title mb-1">Total Revenue</h6>
+                            <h3 class="card-value">₹{{ total_revenue|floatformat:2 }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="stats-card">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-bg bg-success-light">
+                            <i class="fas fa-shopping-bag fa-lg"></i>
+                        </div>
+                        <div>
+                            <h6 class="card-title mb-1">Total Orders</h6>
+                            <h3 class="card-value">{{ total_orders }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="stats-card">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-bg bg-warning-light">
+                            <i class="fas fa-receipt fa-lg"></i>
+                        </div>
+                        <div>
+                            <h6 class="card-title mb-1">Average Order Value</h6>
+                            <h3 class="card-value">₹{{ avg_order_value|floatformat:2 }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-8 mb-4">
+                <div class="chart-container">
+                    <h5 class="chart-title">Revenue & Orders Trend</h5>
+                    <div class="chart-wrapper">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 mb-4">
+                <div class="chart-container">
+                    <h5 class="chart-title">Frame Shape Distribution</h5>
+                    <div class="chart-wrapper">
+                        <canvas id="shapeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="table-container">
+                    <h5 class="mb-4">Top Selling Products</h5>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Quantity</th>
+                                    <th>Revenue</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for product in top_products %}
+                                <tr>
+                                    <td>{{ product.p_name }}</td>
+                                    <td>{{ product.total_quantity }}</td>
+                                    <td>₹{{ product.total_revenue|floatformat:2 }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center">No data available</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="table-container">
+                    <h5 class="mb-4">Top Customers</h5>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Customer</th>
+                                    <th>Orders</th>
+                                    <th>Total Spent</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for customer in top_customers %}
+                                <tr>
+                                    <td>{{ customer.customer__first_name }} {{ customer.customer__last_name }}</td>
+                                    <td>{{ customer.orders_count }}</td>
+                                    <td>₹{{ customer.total_spent|floatformat:2 }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center">No data available</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        {% if sales_by_shape %}
+        <div class="row">
+            <div class="col-12 mb-4">
+                <div class="table-container">
+                    <h5 class="mb-4">Sales by Frame Shape</h5>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Shape</th>
+                                    <th>Quantity Sold</th>
+                                    <th>Revenue</th>
+                                    <th>Performance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for shape in sales_by_shape %}
+                                <tr>
+                                    <td>{{ shape.shape|title }}</td>
+                                    <td>{{ shape.quantity_sold }}</td>
+                                    <td>₹{{ shape.revenue|floatformat:2 }}</td>
+                                    <td class="w-25">
+                                        <div class="progress">
+                                            {% with max_revenue=sales_by_shape.0.revenue %}
+                                            <div class="progress-bar" role="progressbar" 
+                                                 style="width: {% widthratio shape.revenue max_revenue 100 %}%" 
+                                                 aria-valuenow="{% widthratio shape.revenue max_revenue 100 %}" 
+                                                 aria-valuemin="0" 
+                                                 aria-valuemax="100"></div>
+                                            {% endwith %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">No data available</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    
+    <script>
+        // Initialize datepickers with better mobile support
+        flatpickr(".datepicker", {
+            dateFormat: "Y-m-d",
+            disableMobile: false
+        });
+        
+        // Fetch chart data from API - UPDATED TO USE THE CORRECT URL
+        async function fetchChartData() {
+            const params = new URLSearchParams(window.location.search);
+            const apiUrl = `/chart-data/?${params.toString()}`; // Matches your urls.py
+            
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('Failed to fetch chart data:', error);
+                return null;
+            }
+        }
+        
+        // Create charts with data
+        async function createCharts() {
+            const data = await fetchChartData();
+            if (!data) return;
+            
+            // Set Chart.js defaults for better responsiveness
+            Chart.defaults.responsive = true;
+            Chart.defaults.maintainAspectRatio = false;
+            
+            // Revenue Chart
+            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+            const revenueChart = new Chart(revenueCtx, {
+                type: 'line',
+                data: {
+                    labels: data.labels,
+                    datasets: [
+                        {
+                            label: 'Revenue',
+                            data: data.revenue,
+                            borderColor: '#3498db',
+                            backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Orders',
+                            data: data.orders,
+                            borderColor: '#e74c3c',
+                            backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                boxWidth: 12,
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        },
+                        tooltip: {
+                            usePointStyle: true,
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.dataset.label === 'Revenue') {
+                                        label += '₹' + context.parsed.y.toFixed(2);
+                                    } else {
+                                        label += context.parsed.y;
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                maxRotation: 45,
+                                minRotation: 0,
+                                autoSkipPadding: 10,
+                                autoSkip: true
+                            }
+                        },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'Revenue (₹)'
+                            },
+                            beginAtZero: true
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'Orders'
+                            },
+                            beginAtZero: true,
+                            grid: {
+                                drawOnChartArea: false
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Shape Distribution Chart (if data exists)
+            if (data.shape_data) {
+                const shapeCtx = document.getElementById('shapeChart').getContext('2d');
+                const shapeChart = new Chart(shapeCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: data.shape_data.labels,
+                        datasets: [{
+                            data: data.shape_data.data,
+                            backgroundColor: data.shape_data.background_colors || [
+                                '#3498db',
+                                '#e74c3c',
+                                '#2ecc71',
+                                '#f39c12',
+                                '#9b59b6',
+                                '#1abc9c',
+                                '#34495e',
+                                '#d35400'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '60%',
+                        plugins: {
+                            legend: {
+                                position: 'right',
+                                labels: {
+                                    boxWidth: 12,
+                                    padding: 15,
+                                    font: {
+                                        size: 11
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const value = context.raw;
+                                        const percentage = ((value / total) * 100).toFixed(1);
+                                        return `${context.label}: ${value} (${percentage}%)`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                // Responsive legend handling for small screens
+                const mediaQuery = window.matchMedia('(max-width: 768px)');
+                function handleScreenChange(e) {
+                    if (e.matches) {
+                        shapeChart.options.plugins.legend.position = 'bottom';
+                    } else {
+                        shapeChart.options.plugins.legend.position = 'right';
+                    }
+                    shapeChart.update();
+                }
+                
+                // Initial check and event listener for screen size changes
+                handleScreenChange(mediaQuery);
+                mediaQuery.addEventListener('change', handleScreenChange);
+            }
+        }
+        
+        // Initialize charts when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            createCharts();
+        });
+    </script>
+</body>
+</html>

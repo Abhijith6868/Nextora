@@ -1,0 +1,416 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purchase Order Analysis | Nextora</title>
+    <!-- Bootstrap CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+        .container-fluid {
+            padding: 2rem;
+        }
+        /* Card Styling */
+        .card {
+            border: none;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .card-header {
+            padding: 1rem 1.5rem;
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            color: #fff;
+        }
+        .card-header h5 {
+            margin: 0;
+            font-weight: 500;
+        }
+        .seller-card {
+            border-left: 4px solid #2575fc;
+            transition: transform 0.2s ease;
+        }
+        .seller-card:hover {
+            transform: translateY(-5px);
+        }
+        .stats-card {
+            text-align: center;
+            padding: 1.5rem;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+        .stats-card .number {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .stats-card .label {
+            color: #6c757d;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .table th {
+            font-weight: 500;
+            color: #555;
+        }
+        .badge {
+            font-weight: 500;
+            padding: 0.4em 0.8em;
+        }
+        .progress {
+            height: 8px;
+            margin-bottom: 0.5rem;
+            border-radius: 4px;
+        }
+        .tab-content {
+            padding-top: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- Page Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-shopping-cart me-2"></i>Purchase Order Analysis</h2>
+            <div>
+                <a href="{% url 'admin_view' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left me-1"></i> Back to Admin Panel
+                </a>
+            </div>
+        </div>
+
+        <!-- Filters Card -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="fas fa-filter me-2"></i>Filter Purchase Orders</h5>
+            </div>
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <!-- Seller Filter -->
+                    <div class="col-md-3">
+                        <label class="form-label">Seller</label>
+                        <select name="seller" class="form-select">
+                            <option value="">All Sellers</option>
+                            {% for seller in sellers %}
+                                <option value="{{ seller.id }}" {% if selected_seller == seller.id|stringformat:"i" %}selected{% endif %}>
+                                    {{ seller.username }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Status Filter -->
+                    <div class="col-md-2">
+                        <label class="form-label">Status</label>
+                        <select name="status" class="form-select">
+                            <option value="">All Status</option>
+                            <option value="PENDING" {% if selected_status == 'PENDING' %}selected{% endif %}>Pending</option>
+                            <option value="DELIVERED" {% if selected_status == 'DELIVERED' %}selected{% endif %}>Delivered</option>
+                            <option value="CANCELLED" {% if selected_status == 'CANCELLED' %}selected{% endif %}>Cancelled</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Date Range Filters -->
+                    <div class="col-md-2">
+                        <label class="form-label">From Date</label>
+                        <input type="date" name="date_from" class="form-control" value="{{ date_from }}">
+                    </div>
+                    
+                    <div class="col-md-2">
+                        <label class="form-label">To Date</label>
+                        <input type="date" name="date_to" class="form-control" value="{{ date_to }}">
+                    </div>
+                    
+                    <!-- Submit/Reset Buttons -->
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary me-2">
+                            <i class="fas fa-search me-1"></i> Apply Filters
+                        </button>
+                        <a href="{% url 'purchase-orders' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-redo me-1"></i> Reset
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Statistics Overview -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card stats-card bg-white">
+                    <div class="number text-primary">{{ total_orders }}</div>
+                    <div class="label">Total Orders</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stats-card bg-white">
+                    <div class="number text-success">₹{{ total_value|floatformat:2 }}</div>
+                    <div class="label">Total Order Value</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card stats-card bg-white">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-warning">Pending: {{ pending_count }}</span>
+                        <span class="text-success">Delivered: {{ delivered_count }}</span>
+                        <span class="text-danger">Cancelled: {{ cancelled_count }}</span>
+                    </div>
+                    <div class="progress">
+                        {% if total_orders > 0 %}
+                            <div class="progress-bar bg-warning" style="width: {{ pending_count|divisibleby:total_orders|floatformat:0 }}%"></div>
+                            <div class="progress-bar bg-success" style="width: {{ delivered_count|divisibleby:total_orders|floatformat:0 }}%"></div>
+                            <div class="progress-bar bg-danger" style="width: {{ cancelled_count|divisibleby:total_orders|floatformat:0 }}%"></div>
+                        {% else %}
+                            <div class="progress-bar bg-secondary" style="width: 100%">No orders</div>
+                        {% endif %}
+                    </div>
+                    <div class="label mt-2">Order Status Distribution</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seller Analysis Section -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5><i class="fas fa-chart-pie me-2"></i>Seller Analysis</h5>
+                <span class="badge bg-light text-dark">{{ seller_analysis|length }} Sellers</span>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for seller in seller_analysis %}
+                    <div class="col-md-6 mb-4">
+                        <div class="card seller-card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ seller.seller_name }}</h5>
+                                
+                                <!-- Seller Statistics Row -->
+                                <div class="row g-2 mb-3">
+                                    <div class="col-4">
+                                        <div class="p-2 border rounded text-center">
+                                            <div class="fw-bold">{{ seller.order_count }}</div>
+                                            <small class="text-muted">Orders</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="p-2 border rounded text-center">
+                                            <div class="fw-bold">₹{{ seller.total_value|floatformat:0 }}</div>
+                                            <small class="text-muted">Total Value</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="p-2 border rounded text-center">
+                                            <div class="fw-bold">₹{{ seller.avg_order_value|floatformat:0 }}</div>
+                                            <small class="text-muted">Avg Order</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Status Progress Bar -->
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between small mb-1">
+                                        <span>Pending: {{ seller.pending_count }}</span>
+                                        <span>Delivered: {{ seller.delivered_count }}</span>
+                                        <span>Cancelled: {{ seller.cancelled_count }}</span>
+                                    </div>
+                                    <div class="progress">
+                                        {% if seller.order_count > 0 %}
+                                            <div class="progress-bar bg-warning" style="width: {{ seller.pending_count|divisibleby:seller.order_count|floatformat:0 }}%"></div>
+                                            <div class="progress-bar bg-success" style="width: {{ seller.delivered_count|divisibleby:seller.order_count|floatformat:0 }}%"></div>
+                                            <div class="progress-bar bg-danger" style="width: {{ seller.cancelled_count|divisibleby:seller.order_count|floatformat:0 }}%"></div>
+                                        {% else %}
+                                            <div class="progress-bar bg-secondary" style="width: 100%">No orders</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <!-- Top Products Table -->
+                                <div class="mb-3">
+                                    <h6 class="text-muted mb-2">Top Products</h6>
+                                    {% if seller.top_products %}
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-striped mb-0">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>Product Name</th>
+                                                        <th class="text-end">Orders</th>
+                                                        <th class="text-end">Quantity</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for product in seller.top_products %}
+                                                    <tr>
+                                                        <td>{{ product.lens__p_name }}</td>
+                                                        <td class="text-end">{{ product.order_count }}</td>
+                                                        <td class="text-end">{{ product.total_quantity }}</td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    {% else %}
+                                        <p class="text-muted small">No products ordered yet</p>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- View All Seller Orders Link -->
+                                <div class="text-end">
+                                    <a href="{% url 'purchase-orders' %}?seller={{ seller.seller_id }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-list me-1"></i> View All Orders
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-12 text-center py-5">
+                        <i class="fas fa-box-open fa-3x mb-3 text-muted"></i>
+                        <p>No purchase orders found with the current filters.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Purchase Orders Table -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5><i class="fas fa-list me-2"></i>Purchase Orders</h5>
+                <span class="badge bg-light text-dark">{{ orders.paginator.count }} Orders</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Product</th>
+                                <th>Seller</th>
+                                <th>Quantity</th>
+                                <th>Total Amount</th>
+                                <th>Purchase Date</th>
+                                <th>Status</th>
+                                <!-- <th class="text-end">Actions</th> -->
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in orders %}
+                            <tr>
+                                <td>{{ order.id }}</td>
+                                <td>{{ order.lens.p_name }}</td>
+                                <td>{{ order.seller.username }}</td>
+                                <td>{{ order.quantity }}</td>
+                                <td>₹{{ order.total_amount }}</td>
+                                <td>{{ order.purchase_date }}</td>
+                                <td>
+                                    {% if order.status == 'PENDING' %}
+                                        <span class="badge bg-warning text-dark">Pending</span>
+                                    {% elif order.status == 'DELIVERED' %}
+                                        <span class="badge bg-success">Delivered</span>
+                                    {% elif order.status == 'CANCELLED' %}
+                                        <span class="badge bg-danger">Cancelled</span>
+                                    {% endif %}
+                                </td>
+                                <!-- <td class="text-end">
+                                    {% if order.status == 'PENDING' %}
+                                        <a href="{% url 'accept_order' order.id %}" class="btn btn-sm btn-outline-success" onclick="return confirm('Accept this order?')">
+                                            <i class="fas fa-check"></i>
+                                        </a>
+                                        <a href="{% url 'reject_order' order.id %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Reject this order?')">
+                                            <i class="fas fa-times"></i>
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted">No actions</span>
+                                    {% endif %}
+                                </td> -->
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="8" class="text-center py-4">
+                                    <div class="text-muted">
+                                        <i class="fas fa-shopping-cart fa-3x mb-3"></i>
+                                        <p>No purchase orders found with the current filters.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Pagination -->
+            <div class="card-footer bg-white">
+                <div class="row align-items-center">
+                    <div class="col-md-6 small text-muted">
+                        {% if orders %}
+                            Showing {{ orders.start_index }} to {{ orders.end_index }} of {{ orders.paginator.count }} purchase orders
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        {% if orders.has_other_pages %}
+                        <nav aria-label="Purchase orders pagination">
+                            <ul class="pagination justify-content-end mb-0">
+                                {% if orders.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ orders.previous_page_number }}&seller={{ selected_seller }}&status={{ selected_status }}&date_from={{ date_from }}&date_to={{ date_to }}">
+                                        <i class="fas fa-chevron-left small"></i> Previous
+                                    </a>
+                                </li>
+                                {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link"><i class="fas fa-chevron-left small"></i> Previous</span>
+                                </li>
+                                {% endif %}
+                                
+                                {% for i in orders.paginator.page_range %}
+                                    {% if i == orders.number %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ i }}</span>
+                                    </li>
+                                    {% elif i > orders.number|add:'-3' and i < orders.number|add:'3' %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ i }}&seller={{ selected_seller }}&status={{ selected_status }}&date_from={{ date_from }}&date_to={{ date_to }}">{{ i }}</a>
+                                    </li>
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                {% if orders.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ orders.next_page_number }}&seller={{ selected_seller }}&status={{ selected_status }}&date_from={{ date_from }}&date_to={{ date_to }}">
+                                        Next <i class="fas fa-chevron-right small"></i>
+                                    </a>
+                                </li>
+                                {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">Next <i class="fas fa-chevron-right small"></i></span>
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS Bundle (with Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

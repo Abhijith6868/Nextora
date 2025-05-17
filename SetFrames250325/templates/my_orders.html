@@ -1,0 +1,327 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Orders - Nextora</title>
+  <!-- CSS -->
+  <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <link href="{% static 'css/style.css' %}" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
+    .orders-container {
+      padding: 2rem 0;
+    }
+    .order-card {
+      background: white;
+      border-radius: 15px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    }
+    .order-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    .order-id {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #2c3e50;
+    }
+    .order-date {
+      color: #6c757d;
+      font-size: 0.9rem;
+    }
+    .order-status {
+      font-weight: 500;
+      text-transform: capitalize;
+      padding: 0.5rem 1rem;
+      border-radius: 50px;
+      font-size: 0.9rem;
+    }
+    .status-completed {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    .status-cancelled {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+    .status-pending {
+      background-color: #fff3cd;
+      color: #856404;
+    }
+    .product-list {
+      margin-top: 1.5rem;
+    }
+    .table th,
+    .table td {
+      vertical-align: middle;
+    }
+    .order-footer {
+      margin-top: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .btn-invoice,
+    .btn-cancel {
+      border-radius: 50px;
+    }
+    .empty-orders {
+      text-align: center;
+      padding: 4rem 0;
+      color: #6c757d;
+    }
+    /* Styling for product image thumbnail */
+    .product-thumb {
+      width: 50px;
+      height: auto;
+      border-radius: 5px;
+    }
+    
+    /* Review Modal Styles */
+    .rating-input {
+      margin: 1rem 0;
+    }
+    .btn-check:checked + .btn-outline-warning {
+      background-color: #ffc107;
+      color: #000;
+    }
+    .btn-outline-warning:hover {
+      background-color: #fff3cd;
+    }
+    .modal-lg {
+      max-width: 800px;
+    }
+
+    /* Inline Review Form Styles */
+    .review-form-row {
+      display: none;
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 10px;
+      margin-top: 10px;
+    }
+    .review-form-row.active {
+      display: table-row;
+    }
+    .review-form-cell {
+      padding: 15px;
+    }
+    .star-rating {
+      display: inline-flex;
+      gap: 10px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+      <a class="navbar-brand" href="/">
+        <i class="fas fa-laptop me-2"></i>Nextora
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarMain">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="/"><i class="fas fa-home me-1"></i>Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'allProducts' %}"><i class="fas fa-store me-1"></i>Shop</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'my-cart' %}"><i class="fas fa-shopping-cart me-1"></i>Cart</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container orders-container">
+    <h2 class="mb-4">My Orders</h2>
+
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    {% if orders_data %}
+      {% for order_data in orders_data %}
+        <div class="order-card">
+          <div class="order-header d-flex justify-content-between align-items-center">
+            <div>
+              <div class="order-id">Order #{{ order_data.order.id }}</div>
+              <div class="order-date">
+                <i class="far fa-calendar-alt me-1"></i> {{ order_data.order.created_at|date:"F d, Y" }}
+              </div>
+            </div>
+            <span class="order-status 
+              {% if order_data.order.order_status == 'order completed' %}
+                status-completed
+              {% elif order_data.order.order_status == 'order cancelled' %}
+                status-cancelled
+              {% else %}
+                status-pending
+              {% endif %}">
+              {{ order_data.order.order_status }}
+            </span>
+          </div>
+          <!-- Product List with Image -->
+          <div class="product-list">
+            <div class="table-responsive">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Image</th>
+                    <th>Product</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for prod_data in order_data.order_products %}
+                    {% with op=prod_data.order_product %}
+                      <tr>
+                        <td>
+                          <img src="{{ op.product.p_image.url }}" alt="{{ op.product.p_name }}" class="product-thumb">
+                        </td>
+                        <td>{{ op.product.p_name }}</td>
+                        <td>{{ op.quantity }}</td>
+                        <td>₹{{ op.subtotal }}</td>
+                        <td>
+                          {% if prod_data.can_review %}
+                            <button type="button" class="btn btn-primary btn-sm toggle-review" 
+                                    data-review-target="review-form-{{ order_data.order.id }}{{ op.product.p_id }}">
+                              Add Review
+                            </button>
+                          {% endif %}
+                        </td>
+                      </tr>
+                      {% if prod_data.can_review %}
+                      <tr id="review-form-{{ order_data.order.id }}{{ op.product.p_id }}" class="review-form-row">
+                        <td colspan="5" class="review-form-cell">
+                          <form action="{% url 'add_review' order_data.order.id op.product.p_id %}" method="post" class="review-form">
+                            {% csrf_token %}
+                            <div class="row">
+                              <div class="col-md-3">
+                                <img src="{{ op.product.p_image.url }}" alt="{{ op.product.p_name }}" class="img-fluid rounded mb-3">
+                              </div>
+                              <div class="col-md-9">
+                                <h5>{{ op.product.p_name }}</h5>
+                                <div class="mb-3">
+                                  <label class="form-label fw-bold">Your Rating</label>
+                                  <div class="star-rating">
+                                    {% for i in "12345" %}
+                                    <div class="form-check form-check-inline">
+                                      <input type="radio" class="btn-check" name="rating" 
+                                             id="rating{{ order_data.order.id }}{{ op.product.p_id }}{{ i }}" 
+                                             value="{{ i }}" required>
+                                      <label class="btn btn-outline-warning" 
+                                             for="rating{{ order_data.order.id }}{{ op.product.p_id }}{{ i }}">
+                                        {{ i }} <i class="fas fa-star"></i>
+                                      </label>
+                                    </div>
+                                    {% endfor %}
+                                  </div>
+                                </div>
+                                <div class="mb-3">
+                                  <label class="form-label fw-bold">Your Review</label>
+                                  <textarea name="comment" class="form-control" rows="3" 
+                                            placeholder="Share your experience with this product..." required></textarea>
+                                </div>
+                                <div class="text-end">
+                                  <button type="button" class="btn btn-secondary me-2 toggle-review" 
+                                          data-review-target="review-form-{{ order_data.order.id }}{{ op.product.p_id }}">
+                                    Cancel
+                                  </button>
+                                  <button type="submit" class="btn btn-primary">Submit Review</button>
+                                </div>
+                              </div>
+                            </div>
+                          </form>
+                        </td>
+                      </tr>
+                      {% endif %}
+                    {% endwith %}
+                  {% endfor %}
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td colspan="4" class="text-end"><strong>Total:</strong></td>
+                    <td><strong>₹{{ order_data.order.total }}</strong></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+          <div class="order-footer">
+            <a href="{% url 'download_invoice' order_data.order.id %}" class="btn btn-primary btn-invoice">
+              <i class="fas fa-download me-2"></i>Download Invoice
+            </a>
+            {% if order_data.order.order_status != "order cancelled" and order_data.order.order_status != "order completed" %}
+              <form method="POST" action="{% url 'cancel_order' order_data.order.id %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger btn-cancel">
+                  <i class="fas fa-times me-2"></i>Cancel Order
+                </button>
+              </form>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty-orders">
+        <i class="fas fa-box-open fa-3x mb-3 text-muted"></i>
+        <h3>No Orders Yet</h3>
+        <p class="text-muted">Looks like you haven't placed any orders yet.</p>
+        <a href="{% url 'allProducts' %}" class="btn btn-primary mt-3">
+          <i class="fas fa-shopping-bag me-2"></i>Start Shopping
+        </a>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Scripts -->
+  <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+  <script src="{% static 'js/custom.js' %}"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const toggleButtons = document.querySelectorAll('.toggle-review');
+      
+      toggleButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          const targetId = this.getAttribute('data-review-target');
+          const reviewForm = document.getElementById(targetId);
+          
+          if (reviewForm.classList.contains('active')) {
+            reviewForm.classList.remove('active');
+          } else {
+            // Close all other open forms
+            document.querySelectorAll('.review-form-row.active').forEach(form => {
+              if (form.id !== targetId) {
+                form.classList.remove('active');
+              }
+            });
+            reviewForm.classList.add('active');
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>

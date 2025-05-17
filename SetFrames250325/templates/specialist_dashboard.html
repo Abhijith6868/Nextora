@@ -1,0 +1,437 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Specialist Dashboard - Nextora</title>
+  <!-- External Stylesheets -->
+  <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #2c3e50;
+      --secondary-color: #3498db;
+      --success-color: #2ecc71;
+      --warning-color: #f1c40f;
+      --danger-color: #e74c3c;
+    }
+
+    /* Navigation Styles */
+    .navbar {
+      background-color: var(--primary-color);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .navbar-brand, .nav-link {
+      color: white !important;
+    }
+
+    .navbar-brand i {
+      margin-right: 8px;
+    }
+
+    /* Dashboard Container */
+    .dashboard-container {
+      padding: 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* Welcome Section */
+    .welcome-section {
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      color: white;
+      padding: 2rem;
+      border-radius: 12px;
+      margin-bottom: 2rem;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .welcome-section h1 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    .clinic-info {
+      font-size: 1.1rem;
+      opacity: 0.9;
+    }
+
+    /* Stats Cards */
+    .stats-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      transition: transform 0.3s ease;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .stat-card .icon {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      color: var(--secondary-color);
+    }
+
+    .stat-card .number {
+      font-size: 2rem;
+      font-weight: bold;
+      color: var(--primary-color);
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-card .label {
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    /* Appointments Section */
+    .appointments-section {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      overflow: hidden;
+    }
+
+    .section-header {
+      padding: 1.5rem;
+      background: #f8f9fa;
+      border-bottom: 1px solid #e9ecef;
+    }
+
+    .section-header h2 {
+      margin: 0;
+      font-size: 1.5rem;
+      color: var(--primary-color);
+    }
+
+    /* Table Styling */
+    .table {
+      margin-bottom: 0;
+    }
+
+    .table th {
+      background-color: #f8f9fa;
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      color: #495057;
+      border-top: none;
+    }
+
+    .table td {
+      vertical-align: middle;
+    }
+
+    /* Status Badges */
+    .status-badge {
+      padding: 0.5rem 1rem;
+      border-radius: 50px;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+
+    .status-pending {
+      background-color: #fff3cd;
+      color: #856404;
+    }
+
+    .status-confirmed {
+      background-color: #d4edda;
+      color: #155724;
+    }
+
+    .status-completed {
+      background-color: #cce5ff;
+      color: #004085;
+    }
+
+    .status-cancelled {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+
+    /* Action Buttons */
+    .btn-action {
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      margin: 0.2rem;
+      transition: all 0.3s ease;
+    }
+
+    .btn-action i {
+      margin-right: 5px;
+    }
+
+    /* Report Section Styles */
+    .report-section .card {
+      border: none;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      transition: transform 0.2s;
+    }
+
+    .report-section .card:hover {
+      transform: translateY(-2px);
+    }
+
+    .report-section .card-header {
+      border-bottom: none;
+      padding: 1rem;
+    }
+
+    .report-section .card-header h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    .report-section .btn {
+      padding: 0.75rem 1.5rem;
+      font-weight: 500;
+      border-width: 2px;
+      transition: all 0.3s;
+    }
+
+    .report-section .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .report-section .btn i {
+      font-size: 1.1rem;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .dashboard-container {
+        padding: 1rem;
+      }
+
+      .stats-container {
+        grid-template-columns: 1fr;
+      }
+
+      .table-responsive {
+        margin: 0 -1rem;
+      }
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+    }
+
+    .empty-state i {
+      font-size: 4rem;
+      color: #dee2e6;
+      margin-bottom: 1rem;
+    }
+
+    .empty-state h3 {
+      color: #6c757d;
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg">
+    <div class="container">
+      <a class="navbar-brand" href="/"><i class="fas fa-glasses"></i> Nextora</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ml-auto">
+         
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  {% block content %}
+  {% for i in messages %}
+  <div class="alert alert-success" role="alert">
+    {{i}}
+  </div>
+  {% endfor %}
+  <div class="dashboard-container">
+    <!-- Welcome Section -->
+    <div class="welcome-section">
+      <h1><i class="fas fa-user-md"></i> Welcome, Dr. {{ specialist.first_name }} {{ specialist.last_name }}</h1>
+      <p>Manage your appointments and patient schedule from this dashboard.</p>
+    </div>
+
+    <!-- Report Generation Section -->
+    <div class="report-section">
+      <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+          <h3 class="mb-0"><i class="fas fa-file-pdf me-2"></i>Generate Reports</h3>
+        </div>
+        <div class="card-body">
+          <div class="d-flex gap-3">
+            <a href="{% url 'generate_appointment_report' 'daily' %}" class="btn btn-outline-primary">
+              <i class="fas fa-calendar-day me-2"></i>Daily Report
+            </a>
+            <a href="{% url 'generate_appointment_report' 'weekly' %}" class="btn btn-outline-success">
+              <i class="fas fa-calendar-week me-2"></i>Weekly Report
+            </a>
+            <a href="{% url 'generate_appointment_report' 'monthly' %}" class="btn btn-outline-info">
+              <i class="fas fa-calendar-alt me-2"></i>Monthly Report
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-container">
+      <div class="stat-card">
+        <div class="icon"><i class="fas fa-calendar-check"></i></div>
+        <div class="number">{{ total_appointments }}</div>
+        <div class="label">Total Appointments</div>
+      </div>
+      <div class="stat-card">
+        <div class="icon"><i class="fas fa-clock"></i></div>
+        <div class="number">{{ pending_appointments }}</div>
+        <div class="label">Pending Appointments</div>
+      </div>
+      <div class="stat-card">
+        <div class="icon"><i class="fas fa-calendar-day"></i></div>
+        <div class="number">{{ todays_appointments }}</div>
+        <div class="label">Today's Appointments</div>
+      </div>
+    </div>
+
+    <!-- Appointments Section -->
+    <div class="appointments-section">
+      <div class="section-header">
+        <h2><i class="fas fa-calendar-alt"></i> Your Appointments</h2>
+      </div>
+
+      {% if appointments %}
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th><i class="fas fa-user"></i> Patient</th>
+              <th><i class="fas fa-calendar"></i> Date</th>
+              <th><i class="fas fa-clock"></i> Time</th>
+              <th><i class="fas fa-comment-medical"></i> Reason</th>
+              <th><i class="fas fa-info-circle"></i> Status</th>
+              <th><i class="fas fa-cog"></i> Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for appointment in appointments %}
+            <tr>
+              <td>
+                <div class="d-flex align-items-center">
+                  <i class="fas fa-user-circle text-primary mr-2"></i>
+                  {{ appointment.patient.first_name }} {{ appointment.patient.last_name }}
+                </div>
+              </td>
+              <td>{{ appointment.appointment_date|date:"F d, Y" }}</td>
+              <td>{{ appointment.appointment_time }}</td>
+              <td>{{ appointment.reason|truncatechars:50 }}</td>
+              <td>
+                <span class="status-badge status-{{ appointment.status|lower }}">
+                  {{ appointment.status }}
+                </span>
+              </td>
+              <td>
+                <!-- View Patient Details Button - always visible -->
+                <a href="{% url 'patient_details' appointment.id %}" class="btn btn-action btn-info mb-2">
+                  <i class="fas fa-user-md"></i> View Patient
+                </a>
+                
+                <!-- Status Update Buttons -->
+                <div>
+                  {% if appointment.status == 'PENDING' %}
+                  <div class="btn-group">
+                    <button onclick="updateStatus({{ appointment.id }}, 'confirm')" class="btn btn-action btn-success">
+                      <i class="fas fa-check"></i> Confirm
+                    </button>
+                    <button onclick="updateStatus({{ appointment.id }}, 'cancel')" class="btn btn-action btn-danger">
+                      <i class="fas fa-times"></i> Cancel
+                    </button>
+                  </div>
+                  {% endif %}
+                  {% if appointment.status == 'CONFIRMED' %}
+                  <button onclick="updateStatus({{ appointment.id }}, 'complete')" class="btn btn-action btn-primary">
+                    <i class="fas fa-check-double"></i> Complete
+                  </button>
+                  {% endif %}
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <i class="fas fa-calendar-times"></i>
+        <h3>No Appointments Found</h3>
+        <p class="text-muted">You don't have any appointments scheduled at the moment.</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  {% endblock %}
+
+  <!-- Scripts -->
+  <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+  <script>
+    function updateStatus(appointmentId, action) {
+      const confirmMessages = {
+        'confirm': 'Are you sure you want to confirm this appointment?',
+        'cancel': 'Are you sure you want to cancel this appointment?',
+        'complete': 'Are you sure you want to mark this appointment as completed?'
+      };
+
+      if (confirm(confirmMessages[action])) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.style.display = 'none';
+
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = '{{ csrf_token }}';
+        form.appendChild(csrfInput);
+
+        const appointmentInput = document.createElement('input');
+        appointmentInput.type = 'hidden';
+        appointmentInput.name = 'appointment_id';
+        appointmentInput.value = appointmentId;
+        form.appendChild(appointmentInput);
+
+        const actionInput = document.createElement('input');
+        actionInput.type = 'hidden';
+        actionInput.name = 'action';
+        actionInput.value = action;
+        form.appendChild(actionInput);
+
+        document.body.appendChild(form);
+        form.submit();
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,253 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restock Order - Nextora</title>
+    <!-- CSS -->
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        .content-wrapper {
+            padding: 2rem 0;
+        }
+        .order-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .product-image {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-bottom: 1px solid #eee;
+        }
+        .order-details {
+            padding: 2rem;
+        }
+        .product-name {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+        .product-meta {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .meta-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .meta-item:last-child {
+            margin-bottom: 0;
+        }
+        .meta-label {
+            color: #6c757d;
+            width: 120px;
+        }
+        .meta-value {
+            color: #2c3e50;
+            font-weight: 500;
+            flex-grow: 1;
+        }
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .quantity-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid #4c6ef5;
+            background: white;
+            color: #4c6ef5;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .quantity-btn:hover {
+            background: #4c6ef5;
+            color: white;
+        }
+        .quantity-input {
+            width: 100px;
+            text-align: center;
+            font-size: 1.25rem;
+            font-weight: 600;
+            border: 2px solid #e9ecef;
+            border-radius: 50px;
+            padding: 0.5rem;
+        }
+        .quantity-input:focus {
+            outline: none;
+            border-color: #4c6ef5;
+        }
+        .total-cost {
+            background: #4c6ef5;
+            color: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        .total-label {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+        .total-amount {
+            font-size: 2rem;
+            font-weight: 600;
+        }
+        .btn-order {
+            padding: 1rem;
+            font-size: 1.1rem;
+            font-weight: 500;
+            border-radius: 50px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-laptop me-2"></i>Nextora
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarMain">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/"><i class="fas fa-home me-1"></i>Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'allProducts' %}"><i class="fas fa-store me-1"></i>Products</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="javascript:history.back()">
+                            <i class="fas fa-arrow-left me-1"></i>Back
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="content-wrapper">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="order-card">
+                        <img src="{{ lens.p_image.url }}" alt="{{ lens.p_name }}" class="product-image">
+                        
+                        <div class="order-details">
+                            <h1 class="product-name">{{ lens.p_name }}</h1>
+                            
+                            <div class="product-meta">
+                                <div class="meta-item">
+                                    <span class="meta-label">
+                                        <i class="fas fa-tag me-2"></i>Price:
+                                    </span>
+                                    <span class="meta-value">₹{{ lens.p_price }}</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span class="meta-label">
+                                        <i class="fas fa-store me-2"></i>Seller:
+                                    </span>
+                                    <span class="meta-value">{{ lens.seller }}</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span class="meta-label">
+                                        <i class="fas fa-boxes me-2"></i>Current Stock:
+                                    </span>
+                                    <span class="meta-value">{{ lens.p_quantity }}</span>
+                                </div>
+                            </div>
+
+                            <form method="post" id="orderForm">
+                                {% csrf_token %}
+                                
+                                <label class="form-label">Order Quantity:</label>
+                                <div class="quantity-control">
+                                    <button type="button" class="quantity-btn" onclick="decrementQuantity()">
+                                        <i class="fas fa-minus"></i>
+                                    </button>
+                                    <input type="number" id="id_quantity" name="quantity" class="quantity-input" 
+                                           min="1" value="1" required>
+                                    <button type="button" class="quantity-btn" onclick="incrementQuantity()">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+
+                                <div class="total-cost">
+                                    <div class="total-label">Total Cost</div>
+                                    <div class="total-amount">₹<span id="total_cost">{{ lens.p_price }}</span></div>
+                                </div>
+
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary btn-order">
+                                        <i class="fas fa-shopping-cart me-2"></i>Place Restock Order
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <script>
+        const quantityInput = document.getElementById('id_quantity');
+        const totalCostSpan = document.getElementById('total_cost');
+        const unitPrice = {{ lens.p_price }};
+
+        function updateTotalCost() {
+            const quantity = parseInt(quantityInput.value) || 0;
+            const totalCost = (quantity * unitPrice).toFixed(2);
+            totalCostSpan.textContent = totalCost;
+        }
+
+        function incrementQuantity() {
+            quantityInput.value = parseInt(quantityInput.value) + 1;
+            updateTotalCost();
+        }
+
+        function decrementQuantity() {
+            const currentValue = parseInt(quantityInput.value);
+            if (currentValue > 1) {
+                quantityInput.value = currentValue - 1;
+                updateTotalCost();
+            }
+        }
+
+        // Update total cost when quantity is changed directly
+        quantityInput.addEventListener('input', updateTotalCost);
+
+        // Initialize total cost
+        updateTotalCost();
+    </script>
+</body>
+</html>
